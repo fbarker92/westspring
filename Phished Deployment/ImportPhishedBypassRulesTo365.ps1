@@ -1,7 +1,7 @@
 # Disable Internet Explorer OOBE
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main" -Name "DisableFirstRunCustomize" -Value 2
 
-$Uri = 'https://raw.githubusercontent.com/fbarker92/westspring/main/PhishedMailfloWRulesTemplate.xml'
+$Uri = 'https://raw.githubusercontent.com/fbarker92/westspring/main/Phished%20Deployment/PhishedMailfloWRulesTemplate.xml'
 #$PhishedMailflowRule = "C:\TMP\PhishedMailflowRules.xml"
 $xmlDownload = Invoke-WebRequest -ContentType 'application/xml' -Uri $Uri
 
