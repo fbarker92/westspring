@@ -16,7 +16,7 @@ Import-Module ExchangeOnlineManagement
 
 #Connect to the Exchange Online Management Module 
 Connect-IPPSSession -UserPrincipalName $365GA
-Connect-ExchangeOnline
+
 
 # Check if there is a pre-existing PhishSimOverridePolicy to use, will create one if not
 If ((Get-PhishSimOverridePolicy).Name.count -ne 0) {
@@ -31,7 +31,7 @@ If ((Get-PhishSimOverridePolicy).Name.count -ne 0) {
 
 Start-Sleep 5
 
-
+Connect-ExchangeOnline
 # Import the Mailflow rules
 [xml]$xml = $xmlDownload.Content.tostring().Replace('*ClientSecurityHeader*', $ClientSecurityHeader)
 $rulesToImport = $xml.SelectNodes("//rules/rule")
