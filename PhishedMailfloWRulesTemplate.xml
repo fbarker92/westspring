@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-16" standalone="yes"?>
+<rules name="TransportVersioned">
+  <rule name="Phished - bypass spam filter" id="f6d71858-c50f-4604-832b-135810ffac03" format="cmdlet">
+    <version requiredMinVersion="15.0.3.0">
+      <commandBlock><![CDATA[New-TransportRule -Name 'Phished - bypass spam filter' -Mode Enforce -HeaderContainsMessageHeader 'X-PHISHTEST' -HeaderContainsWords 'CLIENT SECURITY HEADER' -SetSCL -1 -SetHeaderName '"X-MS-Exchange-Organization-BypassClutter' -SetHeaderValue 'True']]></commandBlock>
+    </version>
+  </rule>
+  <rule name="Phished - bypass junk folder" id="769b1468-05a8-466c-bf42-bc1cf4ad6a84" format="cmdlet">
+    <version requiredMinVersion="15.0.3.0">
+      <commandBlock><![CDATA[New-TransportRule -Name 'Phished - bypass junk folder' -Mode Enforce -HeaderContainsMessageHeader 'X-PHISHTEST' -HeaderContainsWords 'CLIENT SECURITY HEADER' -SetHeaderName 'X-Forefront-Antispam-Report' -SetHeaderValue 'SFV: SKI;']]></commandBlock>
+    </version>
+  </rule>
+</rules>
