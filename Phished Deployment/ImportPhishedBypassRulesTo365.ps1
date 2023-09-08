@@ -8,6 +8,7 @@ $xmlDownload = Invoke-WebRequest -ContentType 'application/xml' -Uri $Uri
 # Set variables
 $365GA = Read-Host "Enter the UPN for a Global Administrator"
 $PhishedIPs = '143.55.236.228','143.55.236.227','143.140.69.192','34.140.69.192','34.22.133.124'
+$ConnectionFilterPolicyIPs = '34.22.133.124','34.140.69.192','143.55.236.247','143.55.236.228','143.55.236.227'
 $PhishedDomains = 'psr.phished.io','phished.io'
 $ClientSecurityHeader = Read-Host "Enter the Client Security Header (Found in the phished portal)"
 
@@ -34,7 +35,7 @@ Start-Sleep 5
 Connect-ExchangeOnline
 
 # Set the Default Connection Filter policy to Enabled and set the IP ALlow list
-Set-HostedConnectionFilterPolicy -Identity Default -EnableSafeList $true -IPAllowList $PhishedIPs
+Set-HostedConnectionFilterPolicy -Identity Default -EnableSafeList $true -IPAllowList $ConnectionFilterPolicyIPs
 
 # Import the Mailflow rules
 [xml]$xml = $xmlDownload.Content.tostring().Replace('*ClientSecurityHeader*', $ClientSecurityHeader)
