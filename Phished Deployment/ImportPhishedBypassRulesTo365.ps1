@@ -24,9 +24,8 @@ If ((Get-PhishSimOverrideRule).Name.count -ne 0) {
 } elseif ((Get-PhishSimOverridePolicy).Name.Count -ne 0) {
     Get-PhishSimOverrideRule | Set-PhishSimOverrideRule -AddDomains $PhishedDomains -AddSenderIpRanges $PhishedIPs
 } else {
-    New-PhishSimOverridePolicy -Name 'PhishedOverrrideRule'
-    Start-Sleep 1
-    New-PhishSimOverrideRule -Name 'Phished' -Policy PhishedOverrrideRule -Domains $PhishedDomains -SenderIpRanges $PhishedIPs
+    New-PhishSimOverridePolicy -Name 'PhishedOverrideRule'
+    New-PhishSimOverrideRule -Name 'Phished' -Policy PhishedOverrideRule -Domains $PhishedDomains -SenderIpRanges $PhishedIPs
 } 
     
 Start-Sleep 5
