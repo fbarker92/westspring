@@ -30,7 +30,12 @@ If ((Get-PhishSimOverrideRule).Name.count -ne 0) {
     
 Start-Sleep 5
 
+# Connect to the Exchagne Online module
 Connect-ExchangeOnline
+
+# Set the Default Connection Filter policy to Enabled and set the IP ALlow list
+Set-HostedConnectionFilterPolicy -Identity Default -EnableSafeList $true -IPAllowList $PhishedIPs
+
 # Import the Mailflow rules
 [xml]$xml = $xmlDownload.Content.tostring().Replace('*ClientSecurityHeader*', $ClientSecurityHeader)
 $rulesToImport = $xml.SelectNodes("//rules/rule")
