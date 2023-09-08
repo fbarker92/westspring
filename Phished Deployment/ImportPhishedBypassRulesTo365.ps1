@@ -29,6 +29,7 @@ If ((Get-PhishSimOverrideRule).Name.count -ne 0) {
 } else {
     Write-Host "There is no Policy or Rule, creating a Policy (PhishedOverridePolicy), and Rule (Phished)"
     New-PhishSimOverridePolicy -Name 'PhishedOverridePolicy'
+    Start-Sleep 5
     New-PhishSimOverrideRule -Name 'Phished' -Policy PhishedOverrideRule -Domains $PhishedDomains -SenderIpRanges $PhishedIPs
 } 
     
