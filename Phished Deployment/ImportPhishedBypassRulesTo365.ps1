@@ -12,7 +12,7 @@ $PhishedDomains = 'psr.phished.io','phished.io'
 $ClientSecurityHeader = Read-Host "Enter the Client Security Header (Found in the phished portal)"
 
 #Import Exchange Online Management Module
-Import-Module ExchangeOnlineManagementA3A0-2495
+Import-Module ExchangeOnlineManagement
 
 #Connect to the Exchange Online Management Module 
 Connect-IPPSSession -UserPrincipalName $365GA
@@ -24,6 +24,7 @@ If ((Get-PhishSimOverrideRule).Name.count -ne 0) {
     Get-PhishSimOverrideRule | Set-PhishSimOverrideRule -AddDomains $PhishedDomains -AddSenderIpRanges $PhishedIPs
 } else {
     New-PhishSimOverridePolicy -Name 'PhishedOverrrideRule'
+    Start-Sleep 1
     New-PhishSimOverrideRule -Name 'Phished' -Policy PhishedOverrrideRule -Domains $PhishedDomains -SenderIpRanges $PhishedIPs
 } 
     
