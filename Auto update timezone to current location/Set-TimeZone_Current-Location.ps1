@@ -2,9 +2,7 @@ $BingKey = "Au6p1Z3k6CYZZ6zgAJnTKa5mCQTIlfQS2imNze6ocEWUJV-vIuepawH8BvHh_ukB"
 $IPInfo = Invoke-RestMethod http://ipinfo.io/json
 $Location = $IPInfo.loc
 
-<# Write-Host “Country : “$IPInfo.country
-Write-Host “Public IP Address : “$IPInfo.ip
-Write-Host “Location : “$IPInfo.loc #>
+net start w32time
 
 $BingTimeZoneURL = “http://dev.virtualearth.net/REST/v1/TimeZone/$Location” + “?key=$BingKey”
 
