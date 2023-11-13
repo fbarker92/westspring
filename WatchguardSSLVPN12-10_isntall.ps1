@@ -2,7 +2,6 @@ $Uri = "https://cdn.watchguard.com/SoftwareCenter/Files/MUVPN_SSL/12_10/WG-MVPN-
 $FilePath =  "C:\IT\Watchguard\"
 $EXEName = "WG-MVPN-SSL_12_10.exe"
 $EXEPath =  "$FilePath$EXEName"
-$InstallArgs = {/passive}
 
 # Create detination directory if it doesn't already exist
 If (!(Test-Path $FilePath)) {
@@ -19,4 +18,4 @@ If (!($appRunning.Name -ne $null)){
 Invoke-WebRequest -Uri $Uri -OutFile $EXEPath
 
 # Install WG MVPN SSL
-Start-Process -FilePath $EXEPath -ArgumentList
+Start-Process -FilePath $EXEPath
