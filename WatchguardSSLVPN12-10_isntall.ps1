@@ -11,12 +11,21 @@ If (!(Test-Path $FilePath)) {
 
 # Check if WGSSSLVPN if it is running
 $appRunning = get-process | Where-Object {$_.Name -like "wgsslvpnc"}
-If (($appRunning.Name -eq $null)){
+$NetAdapter = Get-NetAdapter | Where-Object {$_.InterfaceDescription -eq "TAP-Windows Adapter V9"}
+
+If (($null -eq $appRunning)){
 # Download the latest WG MVPN SSL
 Invoke-WebRequest -Uri $Uri -OutFile $EXEPath
 # Install WG MVPN SSL
 Start-Process -FilePath $EXEPath  -ArgumentList $ArgsList
+} elseif (($null -ne $appRunning) -and ($NetAdapter.InterfaceOperationalStatus -eq 2)) {
+    Stop-Process -Name $appRunning.Name -Force
+    # Download the latest WG MVPN SSL
+    Invoke-WebRequest -Uri $Uri -OutFile $EXEPath
+    # Install WG MVPN SSL
+    Start-Process -FilePath $EXEPath  -ArgumentList $ArgsList
 } else {
-Exit
+    Exit
 }
+
 
