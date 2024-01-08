@@ -21,7 +21,6 @@ ForEach ($AltDirectorEmail in $AltDirectorEmails) {
     }
 }
 <# $AltDirectorEmails = $AltDirectorEmails -join "," #>
-Write-Host "$AltDirectorEmails" -ForegroundColor Green
 
 # Connect to the Exchange online module
 Connect-ExchangeOnline -UserPrincipalName $GlobalAdministrator
