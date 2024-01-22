@@ -2,6 +2,12 @@
 Param (
 [string] $SiteURL=$(Read-Host -prompt "Enter the full site URL")
 )
+
+# Check PowerShell version that script is being run in
+if ([int]$PSVersionTable.PSVersion.Major -lt 7) {
+    Write-Host "This script requires PowerShell 7 or newer in order to run - https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.4&viewFallbackFrom=powershell-7&WT.mc_id=THOMASMAURER-blog-thmaure"
+    Read-Host "Press any key to continue"
+}
 $ListName= "Site Assets"
   
 #Connect to PnP Online
