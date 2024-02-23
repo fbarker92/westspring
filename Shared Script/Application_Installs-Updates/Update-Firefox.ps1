@@ -1,6 +1,6 @@
-$Uri = "http://dl.google.com/edgedl/chrome/install/GoogleChromeStandaloneEnterprise64.msi"
-$FilePath =  "C:\IT\Google_Chrome\"
-$MSIName = "google-chrome.msi"
+$Uri = "http://https://download-installer.cdn.mozilla.net/pub/firefox/releases/123.0/win64/en-GB/Firefox%20Setup%20123.0.msi"
+$FilePath =  "C:\IT\mozilla_firefox\"
+$MSIName = "mozialla-firefox.msi"
 $MSIPath = "$FilePath$MSIName"
 
 # Create detination directory if it doesn't already exist
@@ -16,7 +16,7 @@ Do {
 } While ($downloadStatus.Length -lt $downloadStatus.Length)
 
 
-# Install Chrome .msi
+# Install .msi
 msiexec.exe /i $MSIPath /qn /norestart
 
 # Clean up

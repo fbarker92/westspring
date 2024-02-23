@@ -4,9 +4,7 @@ $InstallerName = [System.IO.Path]::GetFileName($Uri)
 $InstallerPath = "$InstallerDir$InstallerName"
 
 # Create detination directory if it doesn't already exist
-If (!(Test-Path $InstallerDir)) {
-    New-Item -ItemType Directory -Path $InstallerDir -Force
-}
+If (!(Test-Path $InstallerDir)) {New-Item -ItemType Directory -Path $InstallerDir -Force}
 
 # Download the latest Chrome .msi
 Invoke-WebRequest -Uri $Uri -OutFile $InstallerPath
