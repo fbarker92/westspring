@@ -28,6 +28,8 @@ while ($isLocked) {
 # Install Chrome .msi
 msiexec.exe /i $OutFile /qn /norestart
 
+# Pause script while install is in progress
 Start-Sleep -Seconds 300
+
 # Clean up
 Remove-Item -Path $OutFile -Recurse -ErrorAction SilentlyContinue
