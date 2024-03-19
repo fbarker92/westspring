@@ -1,6 +1,6 @@
 $Uri = "https://download.visualstudio.microsoft.com/download/pr/ab5e947d-3bfc-4948-94a1-847576d949d4/bb11039b70476a33d2023df6f8201ae2/dotnet-sdk-8.0.201-win-x64.exe"
 $DirPath =  "C:\IT\.NET_Latest\"
-$InstallerName = "DotNet_SDK_Latest.exe"
+$InstallerName = "DotNet_SDK_Latest.zip"
 $InstallerPath = "$DirPath$InstallerName"
 $ArgList = '/install /quiet /norestart'
 

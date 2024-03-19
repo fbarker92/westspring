@@ -22,7 +22,7 @@ while ($isLocked) {
 
 
 # Install Chrome .msi
-msiexec.exe /i $InstallerPath /quiet /qn /norestart ZoomAutoUpdate=1
+msiexec.exe /i $InstallerPath OPTIONS="noAutoStart=false" ALLUSERS=1
 
 # Pause while Installer runs
 Start-Sleep 20
