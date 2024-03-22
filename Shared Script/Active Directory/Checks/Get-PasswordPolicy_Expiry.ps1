@@ -5,10 +5,10 @@ If ($DCConnection -eq $False) {
     Exit 0
 } Else {
 # Export Data
-secedit /export /cfg c:\temp\secpol.cfg
+secedit /export /cfg c:\secpol.cfg
 
 #Format Data
-$secpol = (Get-Content C:\temp\secpol.cfg)
+$secpol = (Get-Content C:\secpol.cfg)
 
 #Scrape Data
 $HostName = $env:computername
@@ -18,4 +18,5 @@ $MaximumPasswordAge = $secpol | where{ $_ -like "MaximumPasswordAge*" }
 #Append to CSV
 $NewRow = "$HostName,$($CurrUser.username),$MaximumPasswordAge"
 $NewRow | Add-Content -Path "\\DC04\PasswordPolicy$\PasswordPolicy.csv"
+Remove-Item -Path C:\secpol.cfg
 }

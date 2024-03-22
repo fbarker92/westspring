@@ -14,7 +14,7 @@ If (!(Test-Path $DirPath)) {
 Invoke-WebRequest -Uri $Uri -OutFile $InstallerPath
 while ($isLocked) {
     Try {
-        $stream = [System.IO.File]::Open($OutFile, 'Open', 'Write')
+        $stream = [System.IO.File]::Open($OutFile, 'Open', 'Write') 
         $stream.Close()
         $stream.Dispose()
         $isLocked = $false
