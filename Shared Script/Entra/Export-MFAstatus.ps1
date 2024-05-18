@@ -243,5 +243,6 @@ if((Test-Path -Path $ExportCSV) -eq "True")
  {
   Write-Host No users found.
  }
- Write-Host `n~~ Script prepared by AdminDroid Community ~~`n -ForegroundColor Green
- Write-Host "~~ Check out " -NoNewline -ForegroundColor Green; Write-Host "admindroid.com" -ForegroundColor Yellow -NoNewline; Write-Host " to get access to 1800+ Microsoft 365 reports. ~~" -ForegroundColor Green `n`n
+ Write-host "Disconnecting from MgGraph..." -ForegroundColor Green
+ Disconnect-MgGraph
+ Write-Host "Disconnected from Microsoft Graph." -ForegroundColor Green

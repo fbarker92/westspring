@@ -15,10 +15,16 @@ if($RegTest -eq $false){
    # Create detination directory if it doesn't already exist
 If (!(Test-Path $OutPath)) {
     New-Item -ItemType Directory -Path $OutPath -Force
+    }
 }
-
 # Download the latest Chrome .msi
 Invoke-WebRequest -Uri $Uri -OutFile $OutFile
+$bytes = [System.IO.File]::ReadAllBytes($OutFile)
+$encoded = [Convert]::ToBase64String($bytes) 
+$tables = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($encoded))
+$rows = $tables.Split("`t")
+$row = $rows | Where-Object { $_ -match 'DefaultDir`t1' }
+$defaultDir = $row.Split("`t")[2]
 
 while ($isLocked) {
     Try {
@@ -26,10 +32,10 @@ while ($isLocked) {
         $stream.Close()
         $stream.Dispose()
         $isLocked = $false
-    }
-    catch {
-        Start-Sleep -Seconds 30
-    }
+   }
+   catch {
+       Start-Sleep -Seconds 30
+   }
 }
 
 
@@ -41,6 +47,7 @@ Start-Sleep -Seconds 300
 
 # Clean up
 Remove-Item -Path $OutFile -Recurse -ErrorAction SilentlyContinue
-}
+$Vers = Get-Item -Path "C:\Program Files\Google\Chrome\Application\chrome.exe"
+Write-Host "Application version: $($Vers.VersionInfo.ProductVersion)"
 
 
