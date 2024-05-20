@@ -1,3 +1,9 @@
+Param (
+    [Parameter(Mandatory = $true)]
+    [switch]$365GA,
+    [Switch]$lientSecurityHeader
+)
+
 # Disable Internet Explorer OOBE
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main" -Name "DisableFirstRunCustomize" -Value 2
 
