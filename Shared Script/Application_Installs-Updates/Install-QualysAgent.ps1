@@ -1,13 +1,7 @@
-$Uri = "https://raw.githubusercontent.com/WestspringIT-Implementation/Internal_Downloads/main/Cyber%20Essentials/Qualys%20Agent/QualysCloudAgent.exe"
-$DirPath =  "C:\IT\Qualys_Agent\"
+$Uri = "*download-url*"
+$DirPath = "C:\IT\Qualys_Agent\"
 $InstallerName = "Qualys_Agent.exe"
 $InstallerPath = "$DirPath$InstallerName"
-$ArgList = "CustomerId={{[CustomerID]}} ActivationId={{[ActivationID]}} WebServiceUri=https://qagpublic.qg2.apps.qualys.eu/CloudAgent/"
-
-If (($null -eq $CustomerID) -or ($null -eq $ActivationID)) {
-    Write-host "Please enter the CustomerID and ActivationID" -ForegroundColor Yellow
-    Exit
-}
 
 # Create detination directory if it doesn't already exist
 If (!(Test-Path $DirPath)) {
@@ -18,16 +12,17 @@ If (!(Test-Path $DirPath)) {
 # Download the Qualys Agent
 Invoke-RestMethod -Uri $Uri -OutFile $InstallerPath
 If ((Test-Path $InstallerPath)) {
-    Write-Host "The fileile, $InstallerName, Successfully downloaded" -ForegroundColor Green
+    Write-Host "The file, $InstallerName, Successfully downloaded" -ForegroundColor Green
 } else {
     Write-Host "the File download failed, please try again" -ForegroundColor Red
-    Exit
+    Exit 1
 }
 
 # Install Qualys Agent
 Write-Host "Installing the Qualys Agent..."
-Start-Process $InstallerPath -ArgumentList $ArgList
+Start-Process $InstallerPath /silent
 
+Start-Sleep -Seconds 30
 # Clean up
 Remove-Item -Path $DirPath -Recurse -ErrorAction SilentlyContinue
 If (!(Test-Path $InstallerPath)) {
