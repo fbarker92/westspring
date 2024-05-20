@@ -8,14 +8,10 @@ function Get-InstalledDotNetVersions {
         Where-Object { $_.PSChildName -match '^(?!S)\p{L}'} |
         Select-Object @{
             Name = 'Version'
-            Expression = {
-                [System.Version]::Parse(($_.Version -replace '\.\d+$', ''))
-            }
+            Expression = { $_.Version }
         }, @{
             Name = 'Release'
-            Expression = {
-                ($_.Release -split '\.')[-1]
-            }
+            Expression = { $_.Release }
         }, @{
             Name = 'Type'
             Expression = { '.NET Framework' }
@@ -29,7 +25,7 @@ function Get-InstalledDotNetVersions {
             Name = 'Version'
             Expression = {
                 $versionPath = Split-Path $_.InstallLocation -Leaf
-                [System.Version]($versionPath.Split('-')[0])
+                $versionPath.Split('-')[0]
             }
         }, @{
             Name = 'Release'
@@ -44,7 +40,7 @@ function Get-InstalledDotNetVersions {
         Get-ItemProperty -Name Release -EA 0 |
         Select-Object @{
             Name = 'Version'
-            Expression = { [System.Version]'4.0' }
+            Expression = { '4.0' }
         }, @{
             Name = 'Release'
             Expression = { $_.Release }
@@ -125,22 +121,22 @@ function Update-DotNet {
 # Function to list end-of-life/support .NET versions
 function Get-EndOfLifeDotNetVersions {
     $endOfLifeVersions = @(
-        [System.Version]'4.0',
-        [System.Version]'4.5',
-        [System.Version]'4.5.1',
-        [System.Version]'4.5.2',
-        [System.Version]'4.6',
-        [System.Version]'4.6.1',
-        [System.Version]'4.6.2',
-        [System.Version]'4.7',
-        [System.Version]'4.7.1',
-        [System.Version]'4.7.2'
+        '4.0',
+        '4.5',
+        '4.5.1',
+        '4.5.2',
+        '4.6',
+        '4.6.1',
+        '4.6.2',
+        '4.7',
+        '4.7.1',
+        '4.7.2'
     )
 
-    $installedVersions = Get-InstalledDotNetVersions | ForEach-Object { [System.Version]($_.Split(' ')[1]) }
+    $installedVersions = Get-InstalledDotNetVersions | ForEach-Object { $_.Split(' ')[1] }
 
     $endOfLifeVersions | Where-Object { $installedVersions -contains $_ } | ForEach-Object {
-        $type = (Get-InstalledDotNetVersions | Where-Object { $_.Split(' ')[1] -eq $_.ToString() }).Split(' ')[0]
+        $type = (Get-InstalledDotNetVersions | Where-Object { $_.Split(' ')[1] -eq $_ }).Split(' ')[0]
         Write-Host "$type $_ is end-of-life/support"
     }
 }
@@ -148,23 +144,23 @@ function Get-EndOfLifeDotNetVersions {
 # Function to uninstall end-of-life .NET versions
 function Uninstall-EndOfLifeDotNet {
     $endOfLifeVersions = @(
-        [System.Version]'4.0',
-        [System.Version]'4.5',
-        [System.Version]'4.5.1',
-        [System.Version]'4.5.2',
-        [System.Version]'4.6',
-        [System.Version]'4.6.1',
-        [System.Version]'4.6.2',
-        [System.Version]'4.7',
-        [System.Version]'4.7.1',
-        [System.Version]'4.7.2'
+        '4.0',
+        '4.5',
+        '4.5.1',
+        '4.5.2',
+        '4.6',
+        '4.6.1',
+        '4.6.2',
+        '4.7',
+        '4.7.1',
+        '4.7.2'
     )
 
-    $installedVersions = Get-InstalledDotNetVersions | ForEach-Object { [System.Version]($_.Split(' ')[1]) }
+    $installedVersions = Get-InstalledDotNetVersions | ForEach-Object { $_.Split(' ')[1] }
 
     $endOfLifeVersions | Where-Object { $installedVersions -contains $_ } | ForEach-Object {
         $version = $_
-        $type = (Get-InstalledDotNetVersions | Where-Object { $_.Split(' ')[1] -eq $_.ToString() }).Split(' ')[0]
+        $type = (Get-InstalledDotNetVersions | Where-Object { $_.Split(' ')[1] -eq $_ }).Split(' ')[0]
         $installerPath = "$env:TEMP\dotNetUninstaller.exe"
         $installerUrl = "https://go.microsoft.com/fwlink/?linkid=866021&clcid=0x409&setupVersion=$version"
 
