@@ -3,8 +3,7 @@ $BaseDir = "C:\Windows\System32"
 $OutFile = "$env:TEMP\curl-latest.zip"
 $CurrVers = (Get-Item -Path "$BaseDir\curl.exe").VersionInfo.ProductVersion
 
-$webClient = New-Object System.Net.WebClient
-$webClient.DownloadFile($Uri, $OutFile)
+Invoke-WebRequest -Uri $uri -OutFile $OutFile
 If (Test-Path -Path $OutFile) {
     Write-Host "Expanding curl.zip..."
     Expand-Archive -Path $Path -DestinationPath "$env:TEMP\curl-latest"
