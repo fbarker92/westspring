@@ -6,7 +6,7 @@ $CurrVers = (Get-Item -Path "$BaseDir\curl.exe").VersionInfo.ProductVersion
 Invoke-WebRequest -Uri $uri -OutFile $OutFile
 If (Test-Path -Path $OutFile) {
     Write-Host "Expanding curl.zip..."
-    Expand-Archive -Path $Path -DestinationPath "$env:TEMP\curl-latest"
+    Expand-Archive -Path $OutFile -DestinationPath "$env:TEMP\curl-latest"
 } else {
     Write-Host "Download Failed. Exiting..."
     Exit 1
