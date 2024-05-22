@@ -2,15 +2,17 @@ $uri = "https://curl.se/windows/latest.cgi?p=win64-mingw.zip"
 $BaseDir = "C:\Windows\System32"
 $OutFile = "$env:TEMP\curl-latest.zip"
 $CurrVers = (Get-Item -Path "$BaseDir\curl.exe").VersionInfo.ProductVersion
-$Acl = Get-Acl -Path $BaseDir\curl.exe
-$Account = New-Object -TypeName System.Security.Principal.NTAccount -ArgumentList 'BUILTIN\Administrators';
-$TmpAcl = $Acl.SetOwner($Account)
+$Acl = Get-Acl -Path "$BaseDir\curl.exe"
+$AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("$env:USERDOMAIN\everyone", "FullControl", "Allow")
+$TmpAcl = $Acl
+$TmpAcl.SetAccessRule($AccessRule)
 
+If ((Test-Path -Path $BaseDir\curl.exe) -eq $true) {
 
 Invoke-WebRequest -Uri $uri -OutFile $OutFile
 If (Test-Path -Path $OutFile) {
     Write-Host "Expanding curl.zip..."
-    Expand-Archive -Path $OutFile -DestinationPath "$env:TEMP\curl-latest"
+    Expand-Archive -Path $OutFile -DestinationPath "$env:TEMP\curl-latest" -Force
 } else {
     Write-Host "Download Failed. Exiting..."
     Exit 1
@@ -23,8 +25,8 @@ If ($LatestCurl.VersionInfo.ProductVersion -le $CurrVers) {
 } else {
     Write-Host "Latest curl version is greater than current version. Updating..."
     Set-Acl -Path $BaseDir\curl.exe -AclObject $TmpAcl
-    Rename-Item -Path "$BaseDir\curl.exe" -NewName "curl-$CurrVers.exe" -Force
     Write-Host "Renaming curl.exe to curl-$CurrVers.exe"
+    Rename-Item -Path "$BaseDir\curl.exe" -NewName "curl-$CurrVers.exe" -Force
     Write-Host "Copying curl.exe : $($LatestCurl.VersionInfo.ProductVersion) to $BaseDir "
     Copy-Item -Path $LatestCurl.FullName -Destination "$BaseDir\curl.exe" -Force
     $NewVers = (Get-Item -Path "$BaseDir\curl.exe").VersionInfo.ProductVersion
@@ -37,4 +39,8 @@ Remove-Item -Path "$env:TEMP\curl-latest.zip" -Recurse -Force -ErrorAction Silen
 Remove-Item -Path "$env:TEMP\curl-latest\" -Recurse -Force -ErrorAction SilentlyContinue
 If (((Test-Path -Path $OutFile) -or (Test-Path -Path "$env:TEMP\curl-latest")) -eq $true) {
     Write-Host "Failed to remove temp files. Please remove manually."
+}
+} else {
+    Write-Host "curl.exe not found. Exiting..."
+    Exit 1
 }
