@@ -1,10 +1,11 @@
 $uri = "https://curl.se/windows/latest.cgi?p=win64-mingw.zip"
 $BaseDir = "C:\Windows\System32"
-$DLPath = "$env:TEMP\curl-latest.zip"
+$OutFile = "$env:TEMP\curl-latest.zip"
 $CurrVers = (Get-Item -Path "$BaseDir\curl.exe").VersionInfo.ProductVersion
 
-Invoke-WebRequest -Uri $uri -OutFile $Path
-If (Test-Path -Path $DLPath) {
+$webClient = New-Object System.Net.WebClient
+$webClient.DownloadFile($Uri, $OutFile)
+If (Test-Path -Path $OutFile) {
     Write-Host "Expanding curl.zip..."
     Expand-Archive -Path $Path -DestinationPath "$env:TEMP\curl-latest"
 } else {
@@ -29,6 +30,6 @@ If ($LatestCurl.VersionInfo.ProductVersion -le $CurrVers) {
 Write-Host "Removing Temp Files..."
 Remove-Item -Path "$env:TEMP\curl-latest.zip" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "$env:TEMP\curl-latest\" -Recurse -Force -ErrorAction SilentlyContinue
-If (((Test-Path -Path $DLPath) -or (Test-Path -Path "$env:TEMP\curl-latest")) -eq $true) {
+If (((Test-Path -Path $OutFile) -or (Test-Path -Path "$env:TEMP\curl-latest")) -eq $true) {
     Write-Host "Failed to remove temp files. Please remove manually."
 }
