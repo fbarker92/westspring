@@ -1,0 +1,39 @@
+$Uris = @(
+    "https://download.visualstudio.microsoft.com/download/pr/8e396c75-4d0d-41d3-aea8-848babc2736a/570f7c7e1975df353a4652ae70b3e0ac/ndp462-kb3151802-web.exe",
+    "https://download.visualstudio.microsoft.com/download/pr/2dfcc711-bb60-421a-a17b-76c63f8d1907/f1586a8eb570edb04d91385d0e654348/ndp47-kb3186500-web.exe",
+    "https://download.visualstudio.microsoft.com/download/pr/4312fa21-59b0-4451-9482-a1376f7f3ba4/741e7b1eef95985956fb07c26be9befc/ndp471-kb4033344-web.exe",
+    "https://download.visualstudio.microsoft.com/download/pr/1f5af042-d0e4-4002-9c59-9ba66bcf15f6/124d2afe5c8f67dfa910da5f9e3db9c1/ndp472-kb4054531-web.exe",
+    "https://download.visualstudio.microsoft.com/download/pr/2d6bb6b2-226a-4baa-bdec-798822606ff1/9b7b8746971ed51a1770ae4293618187/ndp48-web.exe",
+    "https://download.microsoft.com/download/4/b/2/cd00d4ed-ebdd-49ee-8a33-eabc3d1030e3/NDP481-Web.exe"
+)
+[array]::Reverse($Uris)
+
+ForEach ($Uri in $Uris) {
+    $InstallerName = $Uri.split("/")[-1]
+    $InstallerPath = "$env:TEMP\$InstallerName"
+    $ArgList = '/q /AcceptEULA /norestart'
+
+    # Download the .NET SDK .exe
+    $webClient = New-Object System.Net.WebClient
+    $webClient.DownloadFile($Uri, $InstallerPath)
+
+    If ((Test-Path $InstallerPath)) {
+        Write-Host "The file, $InstallerName, Successfully downloaded" -ForegroundColor Green
+    }
+    else {
+        Write-Host "the File download failed, please try again" -ForegroundColor Red
+        Exit 1
+    }
+
+    # Install .NET SDK .exe
+    Write-Host "Starting the installation of $InstallerName" -ForegroundColor Green
+    Start-Process -FilePath $InstallerPath -ArgumentList $ArgList -Wait
+
+    # Clean up
+    Remove-Item -Path $InstallerPath -Force -ErrorAction SilentlyContinue
+    If (!(Test-Path $InstallerPath)) {
+        Write-Host "Installation files successfully removed" -ForegroundColor Green
+    }
+ }
+
+#Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP' -Recurse | Get-ItemProperty -Name version -EA 0 | Where { $_.PSChildName -Match '^(?!S)\p{L}'} | Select PSChildName, version
