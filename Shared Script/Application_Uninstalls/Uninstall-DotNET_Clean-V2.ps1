@@ -21,4 +21,3 @@ foreach ($version in $removeSDKs) {
       }
 }
 
-C:\Program Files\dotnet\shared\Microsoft.NETCore.App\
