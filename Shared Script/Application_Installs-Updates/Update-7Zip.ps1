@@ -1,7 +1,7 @@
 $Uri = "https://www.7-zip.org/a/7z2404-x64.msi"
 $InstallerDir =  "C:\IT\Installers\"
 $InstallerName = [System.IO.Path]::GetFileName($Uri)
-$InstallerPath = "$InstallerDir$InstallerName"
+$InstallerPath = "$env:TEMP\$InstallerName"
 $IsInstalled = $null
 $RegTest = Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\7zFM.exe'
 
@@ -10,10 +10,6 @@ if($RegTest -eq $false){
    Write-Host "7Zip is not installed, exiting..."
    exit 0
 }else{
-
-# Create detination directory if it doesn't already exist
-If (!(Test-Path $InstallerDir)) {New-Item -ItemType Directory -Path $InstallerDir -Force}
-
 # Download the latest Chrome .msi
 Invoke-WebRequest -Uri $Uri -OutFile $InstallerPath
 

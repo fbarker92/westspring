@@ -3,7 +3,6 @@ $Uri = "http://dl.google.com/edgedl/chrome/install/GoogleChromeStandaloneEnterpr
 $OutPath =  "C:\IT\Google_Chrome\"
 $OutName = "google-chrome.msi"
 $OutFile = "$OutPath$OutName"
-$isLocked = $true
 $IsInstalled = $null
 $RegTest = Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe'
 
@@ -18,25 +17,8 @@ If (!(Test-Path $OutPath)) {
     }
 }
 # Download the latest Chrome .msi
-Invoke-WebRequest -Uri $Uri -OutFile $OutFile
-$bytes = [System.IO.File]::ReadAllBytes($OutFile)
-$encoded = [Convert]::ToBase64String($bytes) 
-$tables = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($encoded))
-$rows = $tables.Split("`t")
-$row = $rows | Where-Object { $_ -match 'DefaultDir`t1' }
-$defaultDir = $row.Split("`t")[2]
-
-while ($isLocked) {
-    Try {
-        $stream = [System.IO.File]::Open($OutFile, 'Open', 'Write')
-        $stream.Close()
-        $stream.Dispose()
-        $isLocked = $false
-   }
-   catch {
-       Start-Sleep -Seconds 30
-   }
-}
+$webClient = New-Object System.Net.WebClient
+$webClient.DownloadFile($Uri, $OutFile)
 
 
 # Install Chrome .msi

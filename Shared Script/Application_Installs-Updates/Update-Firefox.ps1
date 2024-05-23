@@ -27,7 +27,7 @@ msiexec.exe /i $MSIPath /qn /norestart
 Remove-Item -Path $FilePath -Recurse -ErrorAction SilentlyContinue
 }
 
-function DownloadWebFile {
+function DownloadWebFile() {
     param (
         [string] $Uri,
         [string] $MSIName,
