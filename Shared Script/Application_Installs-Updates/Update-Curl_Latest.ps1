@@ -2,8 +2,8 @@ $uri = "https://curl.se/windows/latest.cgi?p=win64-mingw.zip"
 $BaseDir = "C:\Windows\System32"
 $OutFile = "$env:TEMP\curl-latest.zip"
 $CurrVers = (Get-Item -Path "$BaseDir\curl.exe").VersionInfo.ProductVersion
-$Acl = Get-Acl -Path "$BaseDir\curl.exe"
-$AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("$env:USERDOMAIN\everyone", "FullControl", "Allow")
+$Acl = (Get-Acl -Path "$BaseDir\curl.exe")
+$AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("Everyone","FullControl","Allow")
 $TmpAcl = $Acl
 $TmpAcl.SetAccessRule($AccessRule)
 
