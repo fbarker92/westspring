@@ -1,3 +1,17 @@
+<#
+.SYNOPSIS
+Ensures that the Microsoft.Graph module is installed.
+
+.DESCRIPTION
+This function checks if the Microsoft.Graph module is installed. If it's not installed, the function will attempt to install it from the PowerShell Gallery.
+
+.EXAMPLE
+Ensure-MicrosoftGraphModule
+
+.NOTES
+This function requires administrative privileges to install the module from the PowerShell Gallery.
+#>
+
 function Install-ExchangeOnlineManagementModule {
     <#
     .SYNOPSIS
@@ -31,19 +45,6 @@ function Install-ExchangeOnlineManagementModule {
         Write-Host "The $moduleName module is already installed." -ForegroundColor Green
     }
 }
-<#
-.SYNOPSIS
-Ensures that the Microsoft.Graph module is installed.
-
-.DESCRIPTION
-This function checks if the Microsoft.Graph module is installed. If it's not installed, the function will attempt to install it from the PowerShell Gallery.
-
-.EXAMPLE
-Ensure-MicrosoftGraphModule
-
-.NOTES
-This function requires administrative privileges to install the module from the PowerShell Gallery.
-#>
 function Install-MicrosoftGraphModule {
     <#
     .SYNOPSIS
@@ -282,8 +283,8 @@ function Get-DMARCTXTRecords {
     }
 }
 
-Ensure-ExchangeOnlineManagementModule
-Ensure-MicrosoftGraphModule
+Install-ExchangeOnlineManagementModule
+Install-MicrosoftGraphModule
 Get-M365Domains
 $selectedDomains = Select-Domain -Domains $tenantDomains.Id
 New-DMARCMailboxes -SelectedDomains $selectedDomains
