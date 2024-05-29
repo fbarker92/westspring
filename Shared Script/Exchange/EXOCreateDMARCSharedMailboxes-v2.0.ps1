@@ -1,4 +1,4 @@
-function Ensure-ExchangeOnlineManagementModule {
+function Install-ExchangeOnlineManagementModule {
     <#
     .SYNOPSIS
     Ensures that the ExchangeOnlineManagement module is installed.
@@ -7,7 +7,7 @@ function Ensure-ExchangeOnlineManagementModule {
     This function checks if the ExchangeOnlineManagement module is installed. If it's not installed, the function will attempt to install it from the PowerShell Gallery.
 
     .EXAMPLE
-    Ensure-ExchangeOnlineManagementModule
+    Install-ExchangeOnlineManagementModule
 
     .NOTES
     This function requires administrative privileges to install the module from the PowerShell Gallery.
@@ -31,7 +31,20 @@ function Ensure-ExchangeOnlineManagementModule {
         Write-Host "The $moduleName module is already installed." -ForegroundColor Green
     }
 }
-function Ensure-MicrosoftGraphModule {
+<#
+.SYNOPSIS
+Ensures that the Microsoft.Graph module is installed.
+
+.DESCRIPTION
+This function checks if the Microsoft.Graph module is installed. If it's not installed, the function will attempt to install it from the PowerShell Gallery.
+
+.EXAMPLE
+Ensure-MicrosoftGraphModule
+
+.NOTES
+This function requires administrative privileges to install the module from the PowerShell Gallery.
+#>
+function Install-MicrosoftGraphModule {
     <#
     .SYNOPSIS
     Ensures that the Microsoft.Graph module is installed.
@@ -40,7 +53,7 @@ function Ensure-MicrosoftGraphModule {
     This function checks if the Microsoft.Graph module is installed. If it's not installed, the function will attempt to install it from the PowerShell Gallery.
 
     .EXAMPLE
-    Ensure-MicrosoftGraphModule
+    Install-MicrosoftGraphModule
 
     .NOTES
     This function requires administrative privileges to install the module from the PowerShell Gallery.
