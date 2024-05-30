@@ -1,5 +1,4 @@
 ##Connect to Exchange and Msol
-$PSversionTable.PSVersion
 Connect-ExchangeOnline
 Connect-MsolService
 
@@ -75,7 +74,7 @@ Write-host ""
 Write-Host "DMARC TXT Records..."
 ForEach ($selectedDomain in $selectedDomains) {
     Write-Host $selectedDomain -ForegroundColor Green
-    Write-Host "_dmarc.$selectedDomain" " - " "v=DMARC1; p=quarantine; pct=100; rua=mailto:DMARCAggregate@$selectedDomain; ruf=mailto:DMARCForensics@$selectedDomain"
+    Write-Host "_dmarc.$selectedDomain" " - " "v=DMARC1; p=quarantine; pct=100; rua=mailto:DMARCAggregate@$selectedDomain; ruf=mailto:DMARCForensics@$selectedDomain; fo=0"
     Write-Host ""
 }
 

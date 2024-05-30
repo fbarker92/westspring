@@ -1,72 +1,35 @@
-# Function to get all installed .NET versions
-function Get-InstalledDotNetVersions {
-    $dotNetInstallations = @()
+# Download and install the dotnet-uninstall-tool MSI
+$toolUrl = "https://github.com/dotnet/cli-lab/releases/download/1.7.521001/dotnet-core-uninstall-1.7.521001.msi"
+$toolPath = "$env:TEMP\dotnet-core-uninstall.msi"
 
-    # Get .NET Framework versions
-    $dotNetInstallations += Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP' -Recurse |
-        Get-ItemProperty -Name Version,Release -EA 0 |
-        Where-Object { $_.PSChildName -match '^(?!S)\p{L}'} |
-        Select-Object @{
-            Name = 'Version'
-            Expression = { $_.Version }
-        }, @{
-            Name = 'Release'
-            Expression = { $_.Release }
-        }, @{
-            Name = 'Type'
-            Expression = { '.NET Framework' }
-        }
+Write-Host "Downloading dotnet-uninstall-tool..."
+Invoke-WebRequest -Uri $toolUrl -OutFile $toolPath
 
-    # Get .NET Core versions
-    $dotNetInstallations += Get-ChildItem 'HKLM:\SOFTWARE\dotnet\Setup\InstalledVersions' -Recurse |
-        Get-ItemProperty -Name 'InstallLocation' -EA 0 |
-        Where-Object { $_.InstallLocation -ne $null } |
-        Select-Object @{
-            Name = 'Version'
-            Expression = {
-                $versionPath = Split-Path $_.InstallLocation -Leaf
-                $versionPath.Split('-')[0]
-            }
-        }, @{
-            Name = 'Release'
-            Expression = { '' }
-        }, @{
-            Name = 'Type'
-            Expression = { '.NET Core' }
-        }
+Write-Host "Installing dotnet-uninstall-tool..."
+Start-Process msiexec.exe -ArgumentList "/i $toolPath /quiet" -Wait
 
-    # Get .NET Runtime versions
-    $dotNetInstallations += Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full' -Recurse |
-        Get-ItemProperty -Name Release -EA 0 |
-        Select-Object @{
-            Name = 'Version'
-            Expression = { '4.0' }
-        }, @{
-            Name = 'Release'
-            Expression = { $_.Release }
-        }, @{
-            Name = 'Type'
-            Expression = { '.NET Runtime' }
-        }
+# Get the installation directory of the dotnet-core-uninstall tool
+$installDir = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*' | Where-Object { $_.DisplayName -like 'Microsoft .NET Core Uninstall Tool*' }).InstallLocation
 
-    $dotNetInstallations | ForEach-Object {
-        $version = $_.Version
-        $release = $_.Release
-        $type = $_.Type
+# Change the current directory to the installation directory
+Push-Location $installDir
 
-        $versionString = "$type $version"
-        if ($release) {
-            $versionString += " ($release)"
-        }
+# List all installed .NET versions
+Write-Host "Listing installed .NET versions:"
+.\dotnet-core-uninstall list
 
-        $versionString
-    }
+# Prompt for uninstalling end-of-life versions
+$choice = Read-Host "Do you want to uninstall end-of-life .NET versions? (Y/N)"
+
+if ($choice -eq 'Y' -or $choice -eq 'y') {
+    Write-Host "Uninstalling end-of-life .NET versions..."
+    .\dotnet-core-uninstall uninstall --force --all-but-latest
 }
 
-# Function to download and install the latest .NET updates
-function Update-DotNet {
-    $dotNetInstallations = Get-InstalledDotNetVersions
+# Restore the original current directory
+Pop-Location
 
+<<<<<<< HEAD
     foreach ($installation in $dotNetInstallations) {
         $version = $installation.Split(' ')[1]
         $type = $installation.Split(' ')[0]
@@ -186,3 +149,8 @@ Get-EndOfLifeDotNetVersions
 
 # Uncomment the following line to uninstall end-of-life .NET versions
 # Uninstall-EndOfLifeDotNet
+=======
+# Clean up
+Write-Host "Cleaning up..."
+Remove-Item $toolPath
+>>>>>>> ab3a160feedf1d0c5116121453b1bc847856c46b

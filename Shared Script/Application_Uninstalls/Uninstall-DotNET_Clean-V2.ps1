@@ -18,4 +18,11 @@ foreach ($version in $removeSDKs) {
         Get-ChildItem "C:\Program Files\dotnet\shared" -Recurse -Depth 1 | Where-Object {($_.Name -le $Version)} | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
     }
 }
+<<<<<<< HEAD
 cd "C:\Program Files (x86)\dotnet-core-uninstall\" dotnet-core-uninstall.exe remove --all-below 6.0.0 --sdk --force --yes
+=======
+<<<<<<< HEAD
+
+=======
+>>>>>>> ee000efdae223344ec055670c609f80b7c8e870b
+>>>>>>> ab3a160feedf1d0c5116121453b1bc847856c46b

@@ -1,0 +1,1 @@
+[2024-05-29 22:51:04] Error creating mailboxes for shpbristol.com: ExD48BF8|Microsoft.Exchange.Configuration.ObjectModel.NotAcceptedDomainException|You can't use the domain shpbristol.com because it's not an accepted domain for your organization.
