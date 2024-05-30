@@ -1,0 +1,2 @@
+$Uptime = (Get-Date) - ((Get-CimInstance -ClassName Win32_OperatingSystem).LastBootUpTime)
+Write-Host "Uptime: $($Uptime.Days) Day(s), $($Uptime.Hours) Hour(s), $($Uptime.Minutes) Minute(s), $($Uptime.Seconds) Second(s)"

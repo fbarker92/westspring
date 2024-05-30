@@ -113,7 +113,7 @@ function Update-DotNet {
             }
         }
         catch {
-            Write-Warning "Failed to update $type $version: $_"
+            Write-Warning "Failed to update $type $version : $_"
         }
     }
 }
