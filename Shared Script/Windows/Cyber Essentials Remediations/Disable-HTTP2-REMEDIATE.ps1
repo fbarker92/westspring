@@ -1,0 +1,3 @@
+if((Test-Path -LiteralPath "HKLM:\SYSTEM\CurrentControlSet\Services\HTTP\Parameters") -ne $true) {  New-Item "HKLM:\SYSTEM\CurrentControlSet\Services\HTTP\Parameters" -force -ea SilentlyContinue };
+New-ItemProperty -LiteralPath 'HKLM:\SYSTEM\CurrentControlSet\Services\HTTP\Parameters' -Name 'EnableHttp2Tls' -Value 0 -PropertyType DWord -Force -ea SilentlyContinue;
+New-ItemProperty -LiteralPath 'HKLM:\SYSTEM\CurrentControlSet\Services\HTTP\Parameters' -Name 'EnableHttp2Cleartext' -Value 0 -PropertyType DWord -Force -ea SilentlyContinue;

@@ -1,16 +1,3 @@
-<#
-.SYNOPSIS
-Ensures that the Microsoft.Graph module is installed.
-
-.DESCRIPTION
-This function checks if the Microsoft.Graph module is installed. If it's not installed, the function will attempt to install it from the PowerShell Gallery.
-
-.EXAMPLE
-Ensure-MicrosoftGraphModule
-
-.NOTES
-This function requires administrative privileges to install the module from the PowerShell Gallery.
-#>
 
 function Install-ExchangeOnlineManagementModule {
     <#
@@ -45,8 +32,10 @@ function Install-ExchangeOnlineManagementModule {
         Write-Host "The $moduleName module is already installed." -ForegroundColor Green
     }
 }
+
 function Install-MicrosoftGraphModule {
     <#
+
     .SYNOPSIS
     Ensures that the Microsoft.Graph module is installed.
 
@@ -79,6 +68,32 @@ function Install-MicrosoftGraphModule {
     }
 }
 
+function Connect-MSGraph {
+    <#
+    .SYNOPSIS
+    
+
+    .DESCRIPTION
+    
+
+    .EXAMPLE
+    
+
+    .NOTES
+    
+
+    .LINK
+    
+    #>
+    try {
+        # Connect the Microsoft Graph module with the "Domain.Read.All" scope
+        Connect-MgGraph -Scopes "Domain.Read.All" -NoWelcome
+    }
+    catch {
+        Write-Host "There was an issue connecting to the Microsoft Graph API: $_"
+    }  
+}
+
 function Get-M365Domains {
     <#
     .SYNOPSIS
@@ -103,17 +118,14 @@ function Get-M365Domains {
     https://docs.microsoft.com/en-us/graph/api/resources/domain
     #>
     $tenantDomains = $null
+    Disconnect-MgGraph
     try {
-        try {
         # Connect the Microsoft Graph module with the "Domain.Read.All" scope
-        Connect-MgGraph -Scopes "Domain.Read.Alll" -NoWelcome
-        } catch {
-            Write-Error "Failed to connect to the Microsoft Graph API: $_"
-            Exit 0
-        }
+        Connect-MgGraph -Scopes "Domain.Read.All" -NoWelcome
+
         # Get all domains from the Microsoft Graph API
         $tenantDomains = Get-MgDomain -All | Where-Object { $_.Id -notlike "*.onmicrosoft.com" }
-
+        
         # Return the domains
         return $tenantDomains
     }
@@ -121,7 +133,6 @@ function Get-M365Domains {
         Write-Error "Error retrieving domains: $_"
     }
 }
-
 function Select-Domain {
     param(
         [Parameter(Mandatory=$true)]
@@ -208,7 +219,7 @@ function New-DMARCMailboxes {
     }
 }
 
-function Get-DKIMSigningConfig {
+function Get-DKIMConfig {
     <#
     .SYNOPSIS
     Retrieves and configures DKIM signing configurations for specified domains.
@@ -291,7 +302,7 @@ Install-MicrosoftGraphModule
 Get-M365Domains
 $selectedDomains = Select-Domain -Domains $tenantDomains.Id
 New-DMARCMailboxes -SelectedDomains $selectedDomains
-Get-DKIMSigningConfig -SelectedDomains $selectedDomains
+Get-DKIMConfig -SelectedDomains $selectedDomains
 Get-DMARCTXTRecords -SelectedDomains $selectedDomains
 Write-Host "Press any key to exit..."
 Read-Host
