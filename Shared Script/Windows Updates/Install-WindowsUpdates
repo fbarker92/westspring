@@ -1,0 +1,33 @@
+function Install-WindowsUpdateModule {
+    <#
+    .SYNOPSIS
+    Ensures that the WindowsUpdate module is installed.
+
+    .DESCRIPTION
+    This function checks if the WindowsUpdate module is installed. If it's not installed, the function will attempt to install it from the PowerShell Gallery.
+
+    .EXAMPLE
+    Install-WindowsUpdateModule
+
+    .NOTES
+    This function requires administrative privileges to install the module from the PowerShell Gallery.
+    #>
+
+    $moduleName = "WindowsUpdate"
+    $installedModule = Get-Module -ListAvailable -Name $moduleName
+
+    if ($null -eq $installedModule) {
+        Write-Host "The $moduleName module is not installed. Installing it now..."
+
+        try {
+            Install-Module -Name $moduleName -Force -Scope CurrentUser
+            Write-Host "The $moduleName module has been installed successfully." -ForegroundColor Green
+        }
+        catch {
+            Write-Error "Failed to install the $moduleName module: $_"
+        }
+    }
+    else {
+        Write-Host "The $moduleName module is already installed." -ForegroundColor Green
+    }
+}

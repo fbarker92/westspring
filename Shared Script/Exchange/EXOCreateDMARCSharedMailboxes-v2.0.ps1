@@ -103,11 +103,14 @@ function Get-M365Domains {
     https://docs.microsoft.com/en-us/graph/api/resources/domain
     #>
     $tenantDomains = $null
-    Disconnect-MgGraph
     try {
+        try {
         # Connect the Microsoft Graph module with the "Domain.Read.All" scope
-        Connect-MgGraph -Scopes "Domain.Read.All" -NoWelcome
-
+        Connect-MgGraph -Scopes "Domain.Read.Alll" -NoWelcome
+        } catch {
+            Write-Error "Failed to connect to the Microsoft Graph API: $_"
+            Exit 0
+        }
         # Get all domains from the Microsoft Graph API
         $tenantDomains = Get-MgDomain -All | Where-Object { $_.Id -notlike "*.onmicrosoft.com" }
 
