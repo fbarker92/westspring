@@ -26,13 +26,3 @@ msiexec.exe /i $MSIPath /qn /norestart
 # Clean up
 Remove-Item -Path $FilePath -Recurse -ErrorAction SilentlyContinue
 }
-
-function DownloadWebFile() {
-    param (
-        [string] $Uri,
-        [string] $MSIName,
-        [string] $FilePath
-    )
-    $webClient = New-Object System.Net.WebClient
-    $webClient.DownloadFile($Uri, $MSIPath)
-}
