@@ -1,5 +1,7 @@
 $User = Read-Host "Enter the users full email address (e.g. user@domain.tld)"
 $Date = get-Date -Format "yyyy-MM-dd-HH_mm_ss"
+$csv = "$user-$date.csv"
+$outputObjects = @()
 
 If (!(Get-Module -ListAvailable -Name Microsoft.Graph)) {
     Write-Host "Installing Microsoft.Graph module"
@@ -22,6 +24,7 @@ $EXODynamicDLGroups = Get-DynamicDistributionGroup -ResultSize Unlimited
 foreach ($group in $MGmemberOf) {
     $groupDetails = Get-MgGroup -GroupId $group.Id
     $isMember = Get-MgGroupMemberAsUser -GroupId $group.Id | Select-Object PrimarySmtpAddress
+    try {$isDynamic = [System.Convert]::ToBoolean($groupDetails.MembershipRule) } catch [FormatException] {$isDynamic = $false}
     If ($null -ne $isMember) {
         If ($null -eq (Get-MgGroup -GroupId $group.Id).OnpremisesDomainName) {
             Write-Host "Removing $User from group:  $($groupDetails.DisplayName)"
@@ -35,52 +38,85 @@ foreach ($group in $MGmemberOf) {
         DisplayName = $groupDetails.DisplayName
         Id          = $group.Id
         MailEnabled = $groupDetails.MailEnabled
+        Dynamic     = $isDynamic
         Mail        = $groupDetails.Mail
     } 
-    #$output | Export-Csv -Path .\$User-$Date-Groups.csv -Append -NoTypeInformation
+    $outputObjects += $output
 }
 
 ForEach ($group in $EXOUnifiedGroups) {
     $groupDetails = Get-UnifiedGroup -Identity $group.Identity
-    $isMember = Get-UnifiedGroupLinks -Identity $group.Identity -LinkType Members | Where-Object { $_.PrimarySmtpAddress -eq $User }
-    If ($null -ne $isMember) {
-        Write-Host "Removing $User from group: $($groupDetails.DisplayName)"
+    $groupMembers = Get-UnifiedGroupLinks -Identity $group.Identity -LinkType Members | Where-Object {$_.PrimarySmtpAddress -eq $user}
+    Try {$isDirSynced = [System.Convert]::ToBoolean($groupDetails.IsDirSynced) } catch [FormatException] {$dirSynced = $false}
+    Try {$isDynamic = [System.Convert]::ToBoolean($groupDetails.MembershipRule) } catch [FormatException] {$isDynamic = $false}
+    Try {$isMember = [System.Convert]::ToBoolean($groupMembers.PrimarySmtpAddress -contains $User) } catch [FormatException] {$isMember = $false}
+    Try {$isMailEnabled = [System.Convert]::ToBoolean($groupDetails.PrimarySmtpAddress) } catch [FormatException] {$isMailEnabled = $false}
+
+    If ($true -eq ($dirSynced -or $isDynamic)) {
+        Write-Host "$($groupDetails.DisplayName) is a dynamic group or synced from on prem, please remove user manually" -BackgroundColor Yellow
+    } elseif ($true -eq $isMember) {
+        Write-Host "Removing $User from group: $($groupDetails.DisplayName)" -BackgroundColor Green
         #Remove-UnifiedGroupLinks -Identity $group.Identity -LinkType Members -Links $User
     }
     $output = [PSCustomObject]@{
         DisplayName = $group.DisplayName
         Id          = $group.Id
-        MailEnabled = $true
+        MailEnabled = $isMailEnabled
+        DirSynced   = $isDirSynced
+        Dynamic     = $isDynamic
         Mail        = $group.PrimarySmtpAddress
     } 
-    #$output | Export-Csv -Path .\$User-$Date-Groups.csv -Append -NoTypeInformation
+    $outputObjects += $output
 }
 
 ForEach ($group in $EXODLGroups) {
-    $isMember = Get-DistributionGroupMember -Identity $group.Identity | Where-Object { $_.PrimarySmtpAddress -eq $User }
-    IF ($null -ne $isMember) {
-        Write-Host "Removing $User from group: " $(Get-DistributionGroup -Identity $group.Identity).DisplayName
-        #Remove-DistributionGroupMember -Identity $group.Identity -Member $User
+    $groupDetails = Get-DistributionGroup -Identity $group.Identity
+    $groupMembers = Get-DistributionGroupMember -Identity $group.Identity | Where-Object {$_.PrimarySmtpAddress -eq $user}
+    Try {$isDirSynced = [System.Convert]::ToBoolean($groupDetails.IsDirSynced) } catch [FormatException] {$dirSynced = $false}
+    Try {$isDynamic = [System.Convert]::ToBoolean($groupDetails.MembershipRule) } catch [FormatException] {$isDynamic = $false}
+    Try {$isMember = [System.Convert]::ToBoolean($groupMembers.PrimarySmtpAddress -contains $User) } catch [FormatException] {$isMember = $false}
+    Try {$isMailEnabled = [System.Convert]::ToBoolean($groupDetails.PrimarySmtpAddress) } catch [FormatException] {$isMailEnabled = $false}
+
+    If ($true -eq ($dirSynced -or $isDynamic)) {
+        Write-Host "$($groupDetails.DisplayName) is a dynamic group or synced from on prem, please remove user manually" -ForegroundColor Yellow
+    } elseif ($true -eq $isMember) {
+        Write-Host "Removing $User from group: $($groupDetails.DisplayName)" -ForegroundColor Green
+        #Remove-UnifiedGroupLinks -Identity $group.Identity -LinkType Members -Links $User
     }
     $output = [PSCustomObject]@{
         DisplayName = $group.DisplayName
         Id          = $group.Id
-        MailEnabled = $true
+        MailEnabled = $isMailEnabled
+        DirSynced   = $isDirSynced
+        Dynamic     = $isDynamic
         Mail        = $group.PrimarySmtpAddress
     } 
-    #$output | Export-Csv -Path .\$User-$Date-Groups.csv -Append -NoTypeInformation
+    $outputObjects += $output
 }
 
 ForEach ($group in $EXODynamicDLGroups) {
-    $isMember = Get-Recipient -RecipientPreviewFilter (Get-DynamicDistributionGroup -Identity $group.PrimarySmtpAddress).RecipientFilter | Where-Object { $_.PrimarySmtpAddress -eq $User }
-    IF ($null -ne $isMember) {
-        Write-Host "$User is a member of:  $($(Get-DistributionGroup -Identity $group.Identity).DisplayName), please evaluate the membership condidtions and remove the user manually."
+    $groupDetails = Get-DynamicDistributionGroup -Identity $group.Identity
+    $groupMembers = Get-DynamicDistributionGroupMember -Identity $group.Identity | Where-Object {$_.PrimarySmtpAddress -eq $user}
+    Try {$isDirSynced = [System.Convert]::ToBoolean($groupDetails.IsDirSynced) } catch [FormatException] {$dirSynced = $false}
+    Try {$isDynamic = [System.Convert]::ToBoolean($groupDetails.RecipientFilter) } catch [FormatException] {$isDynamic = $false}
+    Try {$isMember = [System.Convert]::ToBoolean($groupMembers.PrimarySmtpAddress -contains $User) } catch [FormatException] {$isMember = $false}
+    Try {$isMailEnabled = [System.Convert]::ToBoolean($groupDetails.PrimarySmtpAddress) } catch [FormatException] {$isMailEnabled = $false}
+
+    If ($true -eq ($dirSynced -or $isDynamic)) {
+        Write-Host "$($groupDetails.DisplayName) is a dynamic group or synced from on prem, please remove user manually" -ForegroundColor Yellow
+    } elseif ($true -eq $isMember) {
+        Write-Host "Removing $User from group: $($groupDetails.DisplayName)" -ForegroundColor Green
+        #Remove-UnifiedGroupLinks -Identity $group.Identity -LinkType Members -Links $User
     }
     $output = [PSCustomObject]@{
         DisplayName = $group.DisplayName
         Id          = $group.Id
-        MailEnabled = $true
+        MailEnabled = $isMailEnabled
+        DirSynced   = $isDirSynced
+        Dynamic     = $isDynamic
         Mail        = $group.PrimarySmtpAddress
     } 
-    #$output | Export-Csv -Path .\$User-$Date-Groups.csv -Append -NoTypeInformation
+    $outputObjects += $output
 }
+
+$outputObjects | Sort-Object Mail -Unique | Export-Csv -Path ./$csv -NoTypeInformation
