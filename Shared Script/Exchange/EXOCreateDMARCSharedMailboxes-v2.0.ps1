@@ -91,10 +91,19 @@ function Connect-Modules {
         Connect-ExchangeOnline -ShowBanner:$false -ShowProgress:$false
     }
     catch {
-        Write-Host "There was an issue connecting to the Microsoft Graph API: $_"
+        Write-Host "There was an issue connecting: $_"
     }
 }
-
+function Disconnect-Modules {
+    try {
+        # Connect the Microsoft Graph module with the "Domain.Read.All" scope
+        Disconnect-MgGraph
+        disconnect-ExchangeOnline -Confirm:$false
+    }
+    catch {
+        Write-Host "There was an issue connecting: $_"
+    }
+}
 function Get-M365Domains {
     <#
     .SYNOPSIS
@@ -118,11 +127,10 @@ function Get-M365Domains {
     .LINK
     https://docs.microsoft.com/en-us/graph/api/resources/domain
     #>
-    $tenantDomains = $null
+    
     #Disconnect-MgGraph
     try {
-        # Connect the Microsoft Graph module with the "Domain.Read.All" scope
-        #Connect-MgGraph -Scopes "Domain.Read.All" -NoWelcome
+        $null = $tenantDomains
 
         # Get all domains from the Microsoft Graph API
         $tenantDomains = Get-MgDomain -All | Where-Object {($_.Id -notlike "*.onmicrosoft.com") -and ($_.Id -notlike "*.smtp.exclaimer.cloud") }
@@ -312,5 +320,6 @@ $selectedDomains = Select-Domain -Domains $tenantDomains.Id
 New-DMARCMailboxes -SelectedDomains $selectedDomains
 Get-DKIMConfig -SelectedDomains $selectedDomains
 Get-DMARCTXTRecords -SelectedDomains $selectedDomains
+Disconnect-Modules
 Write-Host "Press any key to exit..."
 Read-Host
