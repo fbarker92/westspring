@@ -16,7 +16,7 @@ Write-Host "Connecting to Microsoft Graph and Exchange Online"
 Connect-MgGraph
 Connect-ExchangeOnline
 
-$MGGroups = Get-MgGroup -All -Filter
+$MGGroups = Get-MgGroup -All 
 $EXOUnifiedGroups = Get-UnifiedGroup -ResultSize Unlimited
 $EXODLGroups = Get-DistributionGroup -ResultSize Unlimited
 $EXODynamicDLGroups = Get-DynamicDistributionGroup -ResultSize Unlimited
@@ -33,7 +33,7 @@ foreach ($group in $MGGroups) {
         Write-Host "$($groupDetails.DisplayName) is a dynamic group or synced from on prem, please remove user manually" -ForegroundColor Yellow
     } elseif ($true -eq $isMember) {
         Write-Host "Removing $User from group: $($groupDetails.DisplayName)" -ForegroundColor Green
-        #Remove-UnifiedGroupLinks -Identity $group.Identity -LinkType Members -Links $User
+        Remove-UnifiedGroupLinks -Identity $group.Identity -LinkType Members -Links $User
     }
     $output = [PSCustomObject]@{
         DisplayName = $group.DisplayName
@@ -58,7 +58,7 @@ ForEach ($group in $EXOUnifiedGroups) {
         Write-Host "$($groupDetails.DisplayName) is a dynamic group or synced from on prem, please remove user manually" -ForegroundColor Yellow
     } elseif ($true -eq $isMember) {
         Write-Host "Removing $User from group: $($groupDetails.DisplayName)" -ForegroundColor Green
-        #Remove-UnifiedGroupLinks -Identity $group.Identity -LinkType Members -Links $User
+        Remove-UnifiedGroupLinks -Identity $group.Identity -LinkType Members -Links $User
     }
     $output = [PSCustomObject]@{
         DisplayName = $group.DisplayName
@@ -83,7 +83,7 @@ ForEach ($group in $EXODLGroups) {
         Write-Host "$($groupDetails.DisplayName) is a dynamic group or synced from on prem, please remove user manually" -ForegroundColor Yellow
     } elseif ($true -eq $isMember) {
         Write-Host "Removing $User from group: $($groupDetails.DisplayName)" -ForegroundColor Green
-        #Remove-UnifiedGroupLinks -Identity $group.Identity -LinkType Members -Links $User
+        Remove-UnifiedGroupLinks -Identity $group.Identity -LinkType Members -Links $User
     }
     $output = [PSCustomObject]@{
         DisplayName = $group.DisplayName

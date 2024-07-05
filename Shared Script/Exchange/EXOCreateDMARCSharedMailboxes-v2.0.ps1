@@ -67,31 +67,32 @@ function Install-MicrosoftGraphModule {
         Write-Host "The $moduleName module is already installed." -ForegroundColor Green
     }
 }
-
-function Connect-MSGraph {
-    <#
+function Connect-Modules {
+ <#
     .SYNOPSIS
-    
+    Connects to the Microsoft Graph API and Exchange Online.
 
     .DESCRIPTION
-    
+    This function attempts to connect to the Microsoft Graph API with the "Domain.Read.All" scope and Exchange Online. If there are any issues during the connection process, an error message is displayed.
 
     .EXAMPLE
-    
+    Connect-Modules
 
     .NOTES
-    
+    This function requires the Microsoft Graph and ExchangeOnlineManagement modules to be installed and imported.
 
     .LINK
-    
+    https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.authentication/connect-mggraph
+    https://learn.microsoft.com/en-us/powershell/module/exchange/connect-exchangeonline
     #>
     try {
         # Connect the Microsoft Graph module with the "Domain.Read.All" scope
         Connect-MgGraph -Scopes "Domain.Read.All" -NoWelcome
+        Connect-ExchangeOnline -ShowBanner:$false -ShowProgress:$false
     }
     catch {
         Write-Host "There was an issue connecting to the Microsoft Graph API: $_"
-    }  
+    }
 }
 
 function Get-M365Domains {
@@ -118,16 +119,16 @@ function Get-M365Domains {
     https://docs.microsoft.com/en-us/graph/api/resources/domain
     #>
     $tenantDomains = $null
-    Disconnect-MgGraph
+    #Disconnect-MgGraph
     try {
         # Connect the Microsoft Graph module with the "Domain.Read.All" scope
-        Connect-MgGraph -Scopes "Domain.Read.All" -NoWelcome
+        #Connect-MgGraph -Scopes "Domain.Read.All" -NoWelcome
 
         # Get all domains from the Microsoft Graph API
-        $tenantDomains = Get-MgDomain -All | Where-Object { $_.Id -notlike "*.onmicrosoft.com" }
+        $tenantDomains = Get-MgDomain -All | Where-Object {($_.Id -notlike "*.onmicrosoft.com") -and ($_.Id -notlike "*.smtp.exclaimer.cloud") }
         
         # Return the domains
-        return $tenantDomains
+        #return $tenantDomains
     }
     catch {
         Write-Error "Error retrieving domains: $_"
@@ -246,14 +247,20 @@ function Get-DKIMConfig {
         Write-Host "DKIM CNAME records..."
 
         foreach ($selectedDomain in $SelectedDomains) {
-            Write-Host $selectedDomain -ForegroundColor Green
             $DKIMRecord = Get-DkimSigningConfig -Identity $selectedDomain -ErrorAction SilentlyContinue | Select-Object Enabled, Selector1CNAME, Selector2CNAME
 
             if ($DKIMRecord.Enabled -eq $false) {
                 New-DkimSigningConfig -DomainName $selectedDomain -Enabled $true -ErrorAction SilentlyContinue
+                $NewDKIMRecord = Get-DkimSigningConfig -Identity $selectedDomain -ErrorAction SilentlyContinue | Select-Object Enabled, Selector1CNAME, Selector2CNAME
+                Write-Host  "selector1._domainkey.$($selectedDomain)" -ForegroundColor Green
+                Write-Host $NewDKIMRecord.Selector1CNAME
+                Write-Host  "selector2._domainkey.$($selectedDomain)" -ForegroundColor Green
+                Write-Host $NewDKIMRecord.Selector2CNAME
             }
             else {
+                Write-Host  "selector1._domainkey.$($selectedDomain)" -ForegroundColor Green
                 Write-Host $DKIMRecord.Selector1CNAME
+                Write-Host  "selector2._domainkey.$($selectedDomain)" -ForegroundColor Green
                 Write-Host $DKIMRecord.Selector2CNAME
             }
 
@@ -289,8 +296,8 @@ function Get-DMARCTXTRecords {
         Write-Host "DMARC TXT Records..."
 
         foreach ($selectedDomain in $SelectedDomains) {
-            Write-Host $selectedDomain -ForegroundColor Green
-            $dmarcTxtRecord = "_dmarc.$selectedDomain" + " - " + "v=DMARC1; p=quarantine; pct=100; rua=mailto:DMARCAggregate@$selectedDomain; ruf=mailto:DMARCForensics@$selectedDomain; fo=0"
+            Write-Host "_dmarc.$($selectedDomain)" -ForegroundColor Green
+            $dmarcTxtRecord = "v=DMARC1; p=quarantine; pct=100; rua=mailto:DMARCAggregate@$selectedDomain; ruf=mailto:DMARCForensics@$selectedDomain; fo=0"
             Write-Host $dmarcTxtRecord
             Write-Host ""
         }
@@ -299,6 +306,7 @@ function Get-DMARCTXTRecords {
 
 Install-ExchangeOnlineManagementModule
 Install-MicrosoftGraphModule
+Connect-Modules
 Get-M365Domains
 $selectedDomains = Select-Domain -Domains $tenantDomains.Id
 New-DMARCMailboxes -SelectedDomains $selectedDomains
