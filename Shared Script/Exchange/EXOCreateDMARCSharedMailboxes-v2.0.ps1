@@ -259,6 +259,7 @@ function Get-DKIMConfig {
 
             if ($DKIMRecord.Enabled -eq $false) {
                 New-DkimSigningConfig -DomainName $selectedDomain -Enabled $true -ErrorAction SilentlyContinue
+                Start-Sleep -Seconds 10
                 $NewDKIMRecord = Get-DkimSigningConfig -Identity $selectedDomain -ErrorAction SilentlyContinue | Select-Object Enabled, Selector1CNAME, Selector2CNAME
                 Write-Host  "selector1._domainkey.$($selectedDomain)" -ForegroundColor Green
                 Write-Host $NewDKIMRecord.Selector1CNAME
