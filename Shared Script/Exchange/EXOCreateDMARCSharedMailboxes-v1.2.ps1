@@ -34,6 +34,7 @@ else {
 }
 
 ##Create DMARC Forensics and Aggregate shared mailboxes 
+Write-Host "Creating DMARC Shared Mailboxes..."
 ForEach ($selectedDomain in $selectedDomains) {
     $Name = $selectedDomain
     $PrimaryEmailAddressForensics = "DMARCForensics@" + $selectedDomain

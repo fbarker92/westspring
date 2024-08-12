@@ -67,43 +67,57 @@ function Install-MicrosoftGraphModule {
         Write-Host "The $moduleName module is already installed." -ForegroundColor Green
     }
 }
-function Connect-Modules {
+function Connect-MicrosoftGraphModule {
  <#
     .SYNOPSIS
-    Connects to the Microsoft Graph API and Exchange Online.
-
+    Connects to the Microsoft Graph API.
     .DESCRIPTION
-    This function attempts to connect to the Microsoft Graph API with the "Domain.Read.All" scope and Exchange Online. If there are any issues during the connection process, an error message is displayed.
+    This function attempts to connect to the Microsoft Graph API with the "Domain.Read.All" scope. If there are any issues during the connection process, an error message is displayed.
 
     .EXAMPLE
-    Connect-Modules
+    Connect-MicrosoftGraphModule
 
     .NOTES
     This function requires the Microsoft Graph and ExchangeOnlineManagement modules to be installed and imported.
 
     .LINK
     https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.authentication/connect-mggraph
-    https://learn.microsoft.com/en-us/powershell/module/exchange/connect-exchangeonline
     #>
     try {
         # Connect the Microsoft Graph module with the "Domain.Read.All" scope
+        Write-Host "Connecting to the Microsoft Graph API..." -ForegroundColor Green
         Connect-MgGraph -Scopes "Domain.Read.All" -NoWelcome
-        Connect-ExchangeOnline -ShowBanner:$false -ShowProgress:$false
     }
     catch {
         Write-Host "There was an issue connecting: $_"
     }
 }
-function Disconnect-Modules {
-    try {
-        # Connect the Microsoft Graph module with the "Domain.Read.All" scope
-        Disconnect-MgGraph
-        disconnect-ExchangeOnline -Confirm:$false
-    }
-    catch {
-        Write-Host "There was an issue connecting: $_"
-    }
-}
+function Connect-MicrosoftExchangeOnlineModule {
+    <#
+       .SYNOPSIS
+       Connects to Exchange Online.
+   
+       .DESCRIPTION
+       This function attempts to connect to Exchange Online. If there are any issues during the connection process, an error message is displayed.
+   
+       .EXAMPLE
+       Connect-MicrosoftExchangeOnlineModule
+   
+       .NOTES
+       This function requires the Microsoft Graph and ExchangeOnlineManagement modules to be installed and imported.
+   
+       .LINK
+       https://learn.microsoft.com/en-us/powershell/module/exchange/connect-exchangeonline
+       #>
+       try {
+           # Connect the Microsoft Graph module with the "Domain.Read.All" scope
+           Write-Host "Connecting to Exchange Online..." -ForegroundColor Green
+           Connect-ExchangeOnline
+       }
+       catch {
+           Write-Host "There was an issue connecting: $_"
+       }
+   }
 function Get-M365Domains {
     <#
     .SYNOPSIS
@@ -312,10 +326,27 @@ function Get-DMARCTXTRecords {
         }
     }
 }
+function Disconnect-Modules {
+    try {
+        Write-Host "Disconnecting from Microsoft Graph..."
+        Disconnect-MgGraph -ErrorAction SilentlyContinue
+    }
+    catch {
+        Write-Error "There was an issue connecting: $_"
+    } ;
+    try {
+        Write-Host "Disconnecting from Exchange Online..."
+        disconnect-ExchangeOnline -Confirm:$false
+    }
+    catch {
+        Write-Error "There was an issue connecting: $_"
+    }
+}
 
 Install-ExchangeOnlineManagementModule
 Install-MicrosoftGraphModule
-Connect-Modules
+Connect-MicrosoftExchangeOnlineModule
+Connect-MicrosoftGraphModule
 Get-M365Domains
 $selectedDomains = Select-Domain -Domains $tenantDomains.Id
 New-DMARCMailboxes -SelectedDomains $selectedDomains
