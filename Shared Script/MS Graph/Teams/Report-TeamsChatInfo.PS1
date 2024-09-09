@@ -13,7 +13,7 @@ $TenantList = [System.Collections.Generic.List[Object]]::new()
 ForEach ($Chat in $Chats) {
    $TenantList.Add($Chat.TenantId)
 }
-
+<# 
 $TenantsCount = @{}
 $TenantList = $TenantList | Sort-Object
 $TenantList | ForEach-Object {$TenantsCount[$_]++}
@@ -27,7 +27,7 @@ ForEach ($Tenant in $TenantsCount) {
     $Uri = ("https://graph.microsoft.com/V1.0/tenantRelationships/findTenantInformationByTenantId(tenantId='{0}')" -f $Tenant.Name.ToString())
     $ExternalTenantData = Invoke-MgGraphRequest -Uri $Uri -Method Get -SkipHttpErrorCheck
     $TenantsHash.Add([string]$Tenant.Name.toString(), [string]$ExternalTenantData.displayName)
-}
+} #>
 
 # Create output report
 $Report = [System.Collections.Generic.List[Object]]::new()
@@ -45,9 +45,9 @@ ForEach($Chat in $Chats) {
         $MemberNamesOutput = $MemberNames -Join ", "
     }
 
-    # Get tenant display name
+<#     # Get tenant display name
     $TenantDisplayName = "Unknown"
-    $TenantDisplayName = $TenantsHash[$Chat.TenantId]
+    $TenantDisplayName = $TenantsHash[$Chat.TenantId] #>
 
     $ReportLine = [PSCustomObject][Ordered]@{
       ChatType             = $Chat.ChatType
@@ -63,9 +63,10 @@ ForEach($Chat in $Chats) {
     $Report.Add($ReportLine) 
 } # End ForEach chats
 
-#$Report | Select-Object ChatType, Topic, Created, LastUpdated, NumberOfParticipants, Participants, Tenant, Id | Sort-Object LastUpdated -Descending # | Out-GridView -passThru
+#$Report | Select-Object ChatType, Topic, Created, LastUpdated, NumberOfParticipants, Participants, Tenant, Id | Sort-Object LastUpdated -Descending | Out-GridView -passThru
 
-
+# Import the excluded participants from a CSV file
+# This will prevent the script from deleting chats that contain the excluded participants
 $excludedParticipants = @('Danny Mathews','Liz Painter')  #Import-Csv -Path "path\to\your\file.csv" | Select-Object -ExpandProperty ParticipantName
 
 # Check if the chat participants are in the excluded list
