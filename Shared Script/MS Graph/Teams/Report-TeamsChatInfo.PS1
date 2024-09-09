@@ -1,7 +1,3 @@
-# Report-TeamsChatInfo.PS1
-# An example to show how to report the Teams chat threads for the user signed into an
-# interactive session with the Microsoft Graph PowerShell SDK    
-
 # Connect to the Graph with the necessary permissions
 Connect-MgGraph -Scopes Chat.ReadWrite, Chat.ManageDeletion.All -NoWelcome
  # Find the object identifier for the signed-in user
@@ -29,7 +25,7 @@ Write-Host "Resolving tenant identifiers..."
 $TenantsHash = @{}
 ForEach ($Tenant in $TenantsCount) {
     $Uri = ("https://graph.microsoft.com/V1.0/tenantRelationships/findTenantInformationByTenantId(tenantId='{0}')" -f $Tenant.Name.ToString())
-    $ExternalTenantData = Invoke-MgGraphRequest -Uri $Uri -Method Get  
+    $ExternalTenantData = Invoke-MgGraphRequest -Uri $Uri -Method Get -SkipHttpErrorCheck
     $TenantsHash.Add([string]$Tenant.Name.toString(), [string]$ExternalTenantData.displayName)
 }
 
@@ -67,25 +63,32 @@ ForEach($Chat in $Chats) {
     $Report.Add($ReportLine) 
 } # End ForEach chats
 
-# And here's what we found sorted by the last updated date
-$Report | Select-Object ChatType, Topic, Created, LastUpdated, NumberOfParticipants, Participants, Tenant, Id | Sort-Object LastUpdated -Descending # | Out-GridView -passThru
+#$Report | Select-Object ChatType, Topic, Created, LastUpdated, NumberOfParticipants, Participants, Tenant, Id | Sort-Object LastUpdated -Descending # | Out-GridView -passThru
 
 
-$excludedParticipants = @('Patrick westspring') #@('Jack Nicholas WS') #Import-Csv -Path "path\to\your\file.csv" | Select-Object -ExpandProperty ParticipantName
+$excludedParticipants = @('Danny Mathews','Liz Painter')  #Import-Csv -Path "path\to\your\file.csv" | Select-Object -ExpandProperty ParticipantName
 
-$ChatIds = $Report | Where-Object {($_.ChatType -eq 'oneOnOne') -and ($_.Participants | Where-Object {$_.Participants -notcontains $excludedParticipants})} | Select-Object -ExpandProperty Id
-ForEach ($ChatId in $ChatIds){
-    Remove-MgChat -ChatId $ChatId
-    Write-Host "Chat $ChatId deleted"
-    $deltedChatId = Get-MgTeamworkDeletedChat -DeletedChatId $ChatId | Select-Object -ExpandProperty Id
+# Check if the chat participants are in the excluded list
+$ChatIdsToDelete = @()
+foreach ($Item in $Report){
+    $chatParticipants = $Item.Participants.Split(",").Trim()
+    $shouldDelete = $true
+    foreach ($participant in $chatParticipants) {
+        if ($excludedParticipants -contains $participant) {
+            $shouldDelete = $false
+            break
+        }
+    }
+    if ($shouldDelete) {
+        Write-Host "Chat Id: $($Item.Id)"
+        Write-Host "Chat Participants: $($Item.Participants)"
+        $ChatIdsToDelete += $Item
+    }
+}
+ForEach ($Item in $ChatIdsToDelete){
+    Remove-MgChat -ChatId $Item.Id
+    Write-Host "Chat $($Item.Id) deleted"
+    $deltedChatId = Get-MgTeamworkDeletedChat -DeletedChatId $($Item.Id) | Select-Object -ExpandProperty Id
     Remove-MgBetaTeamworkDeletedChat -DeletedChatId $deltedChatId
     Write-Host "Deleted Chat $deltedChatId deleted"
 } 
-
-
-# An example script used to illustrate a concept. More information about the topic can be found in the Office 365 for IT Pros eBook https://gum.co/O365IT/
-# and/or a relevant article on https://office365itpros.com or https://www.practical365.com. See our post about the Office 365 for IT Pros repository 
-# https://office365itpros.com/office-365-github-repository/ for information about the scripts we write.
-
-# Do not use our scripts in production until you are satisfied that the code meets the needs of your organization. Never run any code downloaded from 
-# the Internet without first validating the code in a non-production environment. 
