@@ -1,4 +1,4 @@
-# Check if
+# Check if required module is installed
 $modulePresent = Get-Module -Name Microsoft.Graph.Teams -ListAvailable
 If (!($modulePresent)) {
     Write-Host "Microsoft.Graph.Teams module not found. Now attempting to install..."
