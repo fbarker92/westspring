@@ -1,3 +1,9 @@
+# Check if
+$modulePresent = Get-Module -Name Microsoft.Graph.Teams -ListAvailable
+If (!($modulePresent)) {
+    Write-Host "Microsoft.Graph.Teams module not found. Now attempting to install..."
+    Install-Module -Name Microsoft.Graph.Teams -Scope CurrentUser -Force
+}
 # Connect to the Graph with the necessary permissions
 Connect-MgGraph -Scopes Chat.ReadWrite, Chat.ManageDeletion.All -NoWelcome
  # Find the object identifier for the signed-in user
