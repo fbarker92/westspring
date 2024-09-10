@@ -23,8 +23,10 @@ $SecureClientSecret = ConvertTo-SecureString -String $ApplicationClientSecret -A
 $ClientSecretCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $ApplicationClientId, $SecureClientSecret
 $TenantId = '' # Tenant ID
 # Import the excluded participants from a CSV file
-[array]$teacherUsers = Import-Csv -Path "C:\path\to\file.csv"
+param(
+[array]$teacherUsers = Import-Csv -Path "C:\path\to\file.csv",
 [array]$studentUsers = Import-Csv -Path "C:\Path\to\file.csv" 
+)
 
 try {
     Connect-MgGraph -TenantId $TenantId -ClientSecretCredential $ClientSecretCredential -NoWelcome -ErrorAction Stop
@@ -37,11 +39,18 @@ catch {
 }
 
 
-ForEach ($studentUser in $studentUsers) {
+$totalStudents = $studentUsers.Count
+for ($i = 0; $i -lt $totalStudents; $i++) {
+    $studentUser = $studentUsers[$i]
+    Write-Progress -Activity "Processing $($studentUser)" -Status "Student $($i+1) of $totalStudents" -PercentComplete (($i+1) / $totalStudents * 100)
 
     # Get UserId for the user
-    $UserId = (Get-MgUser -UserId $UserPrincipalName.PrimarySmtpAddress).Id
-
+    try {
+        $UserId = (Get-MgUser -UserId $studentUser.PrimarySmtpAddress).Id
+    } catch {
+        Write-Host "Error getting user ID: $_" -ForegroundColor Red
+        continue
+    }
     # Get chats for the user
     [array]$Chats = Get-MgUserChat -Userid $UserId -All -Filter "chattype eq 'oneonone'" | Sort-Object LastUpdatedDateTime -Descending
 
@@ -110,4 +119,9 @@ ForEach ($studentUser in $studentUsers) {
         Remove-MgBetaTeamworkDeletedChat -DeletedChatId $deltedChatId
         Write-Host "Deleted Chat $deltedChatId deleted"
     } 
+}
+function Log-Message {
+    param([string]$Message, [string]$Level = "Info")
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    "$timestamp [$Level] $Message" | Out-File -Append -FilePath "script_log.txt"
 }
