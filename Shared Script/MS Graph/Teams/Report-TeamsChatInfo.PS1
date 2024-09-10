@@ -1,8 +1,12 @@
-# Check if required module is installed
+# Check if required module is installed, install if not
 $modulePresent = Get-Module -Name Microsoft.Graph.Teams -ListAvailable
 If (!($modulePresent)) {
     Write-Host "Microsoft.Graph.Teams module not found. Now attempting to install..."
-    Install-Module -Name Microsoft.Graph.Teams -Scope CurrentUser -Force
+    Install-Module -Name Microsoft.Graph.Teams -Scope CurrentUser -Force -AllowClobber
+    If (!($modulePresent)) {
+        Write-Host "Unable to install Microsoft.Graph.Teams module. Please install manually and re-run script."
+        Exit 1
+    }
 }
 # Connect to the Graph with the necessary permissions
 Connect-MgGraph -Scopes Chat.ReadWrite, Chat.ManageDeletion.All -NoWelcome
