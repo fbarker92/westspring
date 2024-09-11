@@ -16,14 +16,14 @@ function Install-RequiredModules {
         $modulePresent = Get-Module -Name $module -ListAvailable
         If (!($modulePresent)) {
             Install-Module -Name $module -Scope CurrentUser -Force -AllowClobber
-            Write-LogMessage -Message "$module module installed." -Level Info
+            Write-LogMessage -Message "[Installing] $module" -Level Info
             If (!(Get-Module -Name $module -ListAvailable)) {
-                Write-LogMessage -Message "Unable to install $module module." -Level Error
+                Write-LogMessage -Message "[Install Failed}] $module" -Level Error
                 return $false
             }
         }
         Else {
-            Write-LogMessage -Message "$module module found." -Level Info
+            Write-LogMessage -Message "[Module Present] $module" -Level Info
         }
     }
     return $true
@@ -53,9 +53,7 @@ function Write-LogMessage {
 
 # Check if required module is installed, install if not
 $requiredModules = @("Microsoft.Graph.Teams", "Microsoft.Graph.Beta")
-if (!(Install-RequiredModules -Modules $requiredModules)) {
-    Exit 0
-}
+Install-RequiredModules -Modules $requiredModules
 
 # Initialise Vars
 $ApplicationClientId = '<Enterprise App Client ID>' # Application (Client) ID
