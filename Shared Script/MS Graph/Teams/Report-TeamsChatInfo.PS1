@@ -16,6 +16,12 @@ If (!($modulePresent)) {
 Else {
     Write-Host "Microsoft.Graph.Teams module found. Continuing..." -ForegroundColor Green
 }
+function Write-LogMessage {
+    param([string]$Message, [string]$Level = "Info")
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    "$timestamp [$Level] $Message" | Out-File -Append -FilePath "script_log.txt"
+}
+
 # Initialise Vars
 $ApplicationClientId = '' # Application (Client) ID
 $ApplicationClientSecret = '' # Application Secret Value
@@ -49,6 +55,7 @@ for ($i = 0; $i -lt $totalStudents; $i++) {
         $UserId = (Get-MgUser -UserId $studentUser.PrimarySmtpAddress).Id
     } catch {
         Write-Host "Error getting user ID: $_" -ForegroundColor Red
+        Write-LogMessage 
         continue
     }
     # Get chats for the user
@@ -66,7 +73,7 @@ for ($i = 0; $i -lt $totalStudents; $i++) {
     # Extract information for each chat thread and write it out to the report file
     ForEach ($Chat in $Chats) {
         # Get members of the chat thread
-        [array]$Members = Get-MgUserChatMember -UserId $UserId -ChatId $Chat.Id
+        [array]$Members = Get-MgUserChatMember -UserId $UserId -ChatId $Chat.Id -All
 
         # Extract the member display names and remove any blanks (accounts that no longer exist)
         [array]$MemberNames = $Members.displayName | Sort-Object -Unique
@@ -119,9 +126,4 @@ for ($i = 0; $i -lt $totalStudents; $i++) {
         Remove-MgBetaTeamworkDeletedChat -DeletedChatId $deltedChatId
         Write-Host "Deleted Chat $deltedChatId deleted"
     } 
-}
-function Log-Message {
-    param([string]$Message, [string]$Level = "Info")
-    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    "$timestamp [$Level] $Message" | Out-File -Append -FilePath "script_log.txt"
 }
