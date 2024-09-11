@@ -1,46 +1,83 @@
 # Check PowserShell Version
 If ($PSVersionTable.PSVersion -lt "7.1") {
     Write-Host "This script requires PowerShell 7.1 or higher. Please update your PowerShell version and re-run the script." -BackgroundColor Red -ForegroundColor White
-    Exit 1
+    Write-LogMessage -Message "This script requires PowerShell 7.1 or higher. Please update your PowerShell version and re-run the script." -Level Error
+    Exit 0
 }
-# Check if required module is installed, install if not
-$modulePresent = Get-Module -Name Microsoft.Graph.Teams -ListAvailable
-If (!($modulePresent)) {
-    Write-Host "Microsoft.Graph.Teams module not found. Now attempting to install..."
-    Install-Module -Name Microsoft.Graph.Teams -Scope CurrentUser -Force -AllowClobber
-    If (!($modulePresent)) {
-        Write-Host "Unable to install Microsoft.Graph.Teams module. Please install manually and re-run script."
-        Exit 0
+# Functions
+function Install-RequiredModules {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [string[]]$Modules
+    )
+
+    foreach ($module in $Modules) {
+        $modulePresent = Get-Module -Name $module -ListAvailable
+        If (!($modulePresent)) {
+            Install-Module -Name $module -Scope CurrentUser -Force -AllowClobber
+            Write-LogMessage -Message "$module module installed." -Level Info
+            If (!(Get-Module -Name $module -ListAvailable)) {
+                Write-LogMessage -Message "Unable to install $module module." -Level Error
+                return $false
+            }
+        }
+        Else {
+            Write-LogMessage -Message "$module module found." -Level Info
+        }
     }
-}
-Else {
-    Write-Host "Microsoft.Graph.Teams module found. Continuing..." -ForegroundColor Green
+    return $true
 }
 function Write-LogMessage {
-    param([string]$Message, [string]$Level = "Info")
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Message,
+        [Parameter(Mandatory=$false)]
+        [ValidateSet("Info", "Warning", "Error")]
+        [string]$Level = "Info"
+    )
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    "$timestamp [$Level] $Message" | Out-File -Append -FilePath "script_log.txt"
+    $logEntry = "$timestamp [$Level] $Message"
+    
+    # Write to console with color-coding
+    switch ($Level) {
+        "Info"    { Write-Host $logEntry -ForegroundColor Green; $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"; $logEntry = "$timestamp [$Level] $Message"}
+        "Warning" { Write-Host $logEntry -ForegroundColor Yellow; $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"; $logEntry = "$timestamp [$Level] $Message"}
+        "Error"   { Write-Host $logEntry -ForegroundColor Red; $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"; $logEntry = "$timestamp [$Level] $Message"}
+    }
+    
+    # Append to log file
+    $logFilePath = "$($env:USERPROFILE)\Report-TeamsChatInfo.log"
+    Add-Content -Path $logFilePath -Value $logEntry
+}
+
+# Check if required module is installed, install if not
+$requiredModules = @("Microsoft.Graph.Teams", "Microsoft.Graph.Beta")
+if (!(Install-RequiredModules -Modules $requiredModules)) {
+    Exit 0
 }
 
 # Initialise Vars
-$ApplicationClientId = '' # Application (Client) ID
-$ApplicationClientSecret = '' # Application Secret Value
+$ApplicationClientId = '<Enterprise App Client ID>' # Application (Client) ID
+$ApplicationClientSecret = '<Enterprise App Client Secret>' # Application Secret Value
 $SecureClientSecret = ConvertTo-SecureString -String $ApplicationClientSecret -AsPlainText -Force
 $ClientSecretCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $ApplicationClientId, $SecureClientSecret
-$TenantId = '' # Tenant ID
+$TenantId = '<Tenant ID>' # Tenant ID
 # Import the excluded participants from a CSV file
-param(
-[array]$teacherUsers = Import-Csv -Path "C:\path\to\file.csv",
-[array]$studentUsers = Import-Csv -Path "C:\Path\to\file.csv" 
-)
+
+[array]$teacherUsers = Import-Csv -Path "C:\path\to\file.csv"
+[array]$studentUsers = Import-Csv -Path "C:\Path\to\file.csv"
+
 
 try {
-    Connect-MgGraph -TenantId $TenantId -ClientSecretCredential $ClientSecretCredential -NoWelcome -ErrorAction Stop
+    Connect-MgGraph -TenantId $TenantId -ClientSecretCredential $ClientSecretCredential -NoWelcome -ErrorAction Stop -Verbose
+    Write-LogMessage -Message "Connected to Microsoft Graph. TenantID: $($TenantId)" -Level Info
 }
 catch {
-    Write-Host "There was an error connecting to MsGraph:" -BackgroundColor Red -ForegroundColor White
-    Write-Host $Error[0] -BackgroundColor Red -ForegroundColor White
-    Write-Host ". Please check the application conenction paramters and try again" -BackgroundColor Red -ForegroundColor White
+    $errorMessage = "There was an error connecting to MsGraph: $($Error[0]). Please check the application connection parameters and try again."
+    Write-LogMessage -Message $errorMessage -Level Error
+    Write-Error $errorMessage
+    #throw $errorMessage
     Exit 0
 }
 
@@ -48,14 +85,14 @@ catch {
 $totalStudents = $studentUsers.Count
 for ($i = 0; $i -lt $totalStudents; $i++) {
     $studentUser = $studentUsers[$i]
-    Write-Progress -Activity "Processing $($studentUser)" -Status "Student $($i+1) of $totalStudents" -PercentComplete (($i+1) / $totalStudents * 100)
+    Write-Progress -Activity "Processing $($studentUser)" -Status "$($i+1) of $totalStudents" -PercentComplete (($i+1) / $totalStudents * 100)
 
     # Get UserId for the user
     try {
         $UserId = (Get-MgUser -UserId $studentUser.PrimarySmtpAddress).Id
     } catch {
         Write-Host "Error getting user ID: $_" -ForegroundColor Red
-        Write-LogMessage 
+        Write-LogMessage -Message $errorMessage -Level Error
         continue
     }
     # Get chats for the user
@@ -118,12 +155,16 @@ for ($i = 0; $i -lt $totalStudents; $i++) {
     }
     # Soft delete the chats
     ForEach ($Item in $ChatIdsToDelete) {
-        Remove-MgChat -ChatId $Item.Id
-        Write-Host "Chat $($Item.Id) deleted" -BackgroundColor Yellow -ForegroundColor Blue
-        Write-Host "Participants: $($Item.Participants)" -BackgroundColor Yellow -ForegroundColor Blue
-        # The below should hard delete the chat, but it is not accepting the ChatId, and the documentation isn't clear on how to do this.
-        $deltedChatId = Get-MgTeamworkDeletedChat -DeletedChatId $($Item.Id) | Select-Object -ExpandProperty Id
-        Remove-MgBetaTeamworkDeletedChat -DeletedChatId $deltedChatId
-        Write-Host "Deleted Chat $deltedChatId deleted"
+        try {
+            Remove-MgChat -ChatId $Item.Id
+            Write-LogMessage -Message "[$($studentUser.PrimarySmtpAddress)], Chat: $($Item.Id) soft deleted" -Level Info 
+            Write-LogMessage -Message "[Participants] $($Item.Participants)" -Level Info 
+            $deltedChatId = Get-MgTeamworkDeletedChat -DeletedChatId $($Item.Id) | Select-Object -ExpandProperty Id
+            Remove-MgBetaTeamworkDeletedChat -DeletedChatId $deltedChatId
+            Write-LogMessage -Message "[Deleted] Chat $deltedChatId" -Level Info
+        }
+        catch {
+            Write-LogMessage -Message "Error deleting chat $($Item.Id): $($_.Exception.Message)" -Level Error
+        }
     } 
 }
