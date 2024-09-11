@@ -10,7 +10,7 @@ If (!($modulePresent)) {
     Install-Module -Name Microsoft.Graph.Teams -Scope CurrentUser -Force -AllowClobber
     If (!($modulePresent)) {
         Write-Host "Unable to install Microsoft.Graph.Teams module. Please install manually and re-run script."
-        Exit 1
+        Exit 0
     }
 }
 Else {
@@ -52,7 +52,7 @@ for ($i = 0; $i -lt $totalStudents; $i++) {
         continue
     }
     # Get chats for the user
-    [array]$Chats = Get-MgUserChat -Userid $UserId -All -Filter "chattype eq 'oneonone'" | Sort-Object LastUpdatedDateTime -Descending
+    [array]$Chats = Get-MgUserChat -Userid $UserId -All -Filter "chattype eq 'group' or chattype eq 'oneonone' or chattype eq 'Meeting'" | Sort-Object LastUpdatedDateTime -Descending
 
     # Extract the identifiers for the tenants that chat threads belong to so that we can resolve them to a tenant name
     $TenantList = [System.Collections.Generic.List[Object]]::new()
