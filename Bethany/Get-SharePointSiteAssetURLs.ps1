@@ -11,7 +11,8 @@ if ([int]$PSVersionTable.PSVersion.Major -lt 7) {
 $ListName= "Site Assets"
   
 #Connect to PnP Online
-Connect-PnPOnline -Url $SiteURL -Interactive
+#Connect-PnPOnline -Url $SiteURL -Interactive
+Connect-PnPOnline -Url $SiteURL -Interactive -ClientId 102b0f73-8088-495d-81c3-a792536a61ee
  
 #Get All Files from the document library - In batches of 500
 $ListItems = Get-PnPListItem -List $ListName -PageSize 500 | Where-Object {$_.FileSystemObjectType -eq "Folder"}
