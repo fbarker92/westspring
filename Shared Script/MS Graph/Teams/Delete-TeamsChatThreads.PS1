@@ -10,14 +10,14 @@ function Install-RequiredModules {
         $modulePresent = Get-Module -Name $module -ListAvailable
         If (!($modulePresent)) {
             Install-Module -Name $module -Scope CurrentUser -Force -AllowClobber -Verbose
-            Write-LogMessage -Message "[Installing] $module" -Level Info
+            Write-LogMessage -Message "Installing $module" -Level Info
             If (!(Get-Module -Name $module -ListAvailable)) {
-                Write-LogMessage -Message "[Install Failed] $module - $errormessage" -Level Error
+                Write-LogMessage -Message "Install Failed for $module - $errormessage" -Level Error
                 return $false
             }
         }
         Else {
-            Write-LogMessage -Message "[Success] $module present" -Level Info
+            Write-LogMessage -Message "$module present" -Level Info
         }
     }
 }
@@ -26,7 +26,7 @@ function Write-LogMessage {
         [Parameter(Mandatory = $true)]
         [string]$Message,
         [Parameter(Mandatory = $false)]
-        [ValidateSet("Info", "Warning", "Error")]
+        [ValidateSet("Info", "Warning", "Error", "Success")]
         [string]$Level = "Info"
     )
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
@@ -34,23 +34,22 @@ function Write-LogMessage {
     
     # Write to console with color-coding
     switch ($Level) {
+        "Success" { Write-Host $logEntry -ForegroundColor Cyan; $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"; $logEntry = "$timestamp [$level] $Message" }
         "Info" { Write-Host $logEntry -ForegroundColor Green; $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"; $logEntry = "$timestamp [$Level] $Message" }
         "Warning" { Write-Host $logEntry -ForegroundColor Yellow; $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"; $logEntry = "$timestamp [$Level] $Message" }
         "Error" { Write-Host $logEntry -ForegroundColor Red; $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"; $logEntry = "$timestamp [$Level] $Message" }
     }
-    
     # Append to log file
-    $PSScriptRoot
     $logFilePath = "$($PSScriptRoot)\$($timestamp.ToString().Split(" ")[0])-Report-TeamsChatInfo.log"
     Add-Content -Path $logFilePath -Value $logEntry
 }
 # Check PowserShell Version
 If ($PSVersionTable.PSVersion -lt "7.1") {
-    Write-LogMessage -Message "[Error] This script requires PowerShell 7.1 or higher. Please update your PowerShell version and re-run the script." -Level Error
+    Write-LogMessage -Message "This script requires PowerShell 7.1 or higher. Please update your PowerShell version and re-run the script." -Level Error
     Exit 0
 }
 else {
-    Write-LogMessage -Message "[Success] PowerShell Version: $($PSVersionTable.PSVersion)" -Level Info
+    Write-LogMessage -Message "PowerShell Version: $($PSVersionTable.PSVersion)" -Level Info
 }
 # Check if required module is installed, install if not
 $requiredModules = @("Microsoft.Graph.Teams", "Microsoft.Graph.Beta")
@@ -64,22 +63,22 @@ $TenantId = '' # Tenant ID
 # Import the excluded participants from a CSV file
 [array]$teacherUsers = Import-Csv -Path "C:\Users\fergusbarker\Downloads\int_exportUsers_2024-9-12.csv"
 If ($teacherUsers.Count -eq 0) {
-    Write-LogMessage -Message "[Error] Teacher users failed to import, Please check the csv file or filepath" -Level Error
+    Write-LogMessage -Message "Teacher users failed to import, Please check the csv file or filepath" -Level Error
 }
 else {
-    Write-LogMessage -Message "[Success] Teacher users imported: $($teacherUsers.Count)" -Level Info
+    Write-LogMessage -Message "Teacher users imported: $($teacherUsers.Count)" -Level Success
 }
 [array]$studentUsers = Import-Csv -Path "C:\Users\fergusbarker\Downloads\ext_exportUsers_2024-9-12.csv"
 If ($studentUsers.Count -eq 0) {
-    Write-LogMessage -Message "[Error] Studen users failed to import, Please check the csv file or filepath" -Level Error
+    Write-LogMessage -Message "Student users failed to import, Please check the csv file or filepath" -Level Error
 }
 else {
-    Write-LogMessage -Message "[Success] Student users imported: $($studentUsers.Count)" -Level Info
+    Write-LogMessage -Message "Student users imported: $($studentUsers.Count)" -Level Success
 }
 # Connect to MsGraph
 try {
-    Connect-MgGraph -TenantId $TenantId -ClientSecretCredential $ClientSecretCredential -NoWelcome -ErrorAction Stop -Verbose 4>&1
-    Write-LogMessage -Message "[Success] Connected to Microsoft Graph. TenantID: $($TenantId)" -Level Info
+    Connect-MgGraph -TenantId $TenantId -ClientSecretCredential $ClientSecretCredential -NoWelcome -ErrorAction Stop -Verbose
+    Write-LogMessage -Message "Connected to Microsoft Graph. TenantID: $($TenantId)" -Level Success
 }
 catch {
     $errorMessage = "There was an error connecting to MsGraph: $($Error[0]). Please check the application connection parameters and try again."
@@ -97,7 +96,7 @@ for ($i = 0; $i -lt $totalStudents; $i++) {
     $processingResult = Measure-Command {
         try {
             # Existing code for processing student
-            Write-LogMessage -Message "[Success] Starting processing for $($studentUser.userPrincipalName)" -Level Info
+            Write-LogMessage -Message "Starting processing for $($studentUser.userPrincipalName)" -Level Info
             # Get UserId for the user
             try {
                 $UserId = (Get-MgUser -UserId $studentUser.userPrincipalName).Id
@@ -181,7 +180,7 @@ for ($i = 0; $i -lt $totalStudents; $i++) {
             ForEach ($Item in $ChatIdsToDelete) {
                 Write-LogMessage -Message "[Success] Processing ChatIDs for $($studentUser.userPrincipalName)" -Level Info
                 try {
-                    Remove-MgChat -ChatId $Item.Id -
+                    Remove-MgChat -ChatId $Item.Id
                     Write-LogMessage -Message "[Success] Soft Deleted ChatID: $($Item.Id). Participants: $($Item.Participants)" -Level Info 
                     try {
                         $deltedChatId = Get-MgTeamworkDeletedChat -DeletedChatId $($Item.Id) | Select-Object -ExpandProperty Id
