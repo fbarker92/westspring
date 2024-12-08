@@ -12,7 +12,7 @@ function Install-RequiredModules {
             Install-Module -Name $module -Scope CurrentUser -Force -AllowClobber -Verbose
             Write-LogMessage -Message "Installing $module" -Level Info
             If (!(Get-Module -Name $module -ListAvailable)) {
-                Write-LogMessage -Message "Install Failed for $module - $errormessage" -Level Error
+                Write-LogMessage -Message "Install Failed for $module - $($_.Exception.Message)" -Level Error
                 return $false
             }
         }
