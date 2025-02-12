@@ -7,7 +7,7 @@ foreach ($PanoCareUser in $PanoCareUsers){
     Get-AzureADUser -ObjectID $PanoCareUser.PrimarySmtpAddress | Select DisplayName,CompanyName
 }
 
-$PanoAssUsers = Get-Mailbox -ResultSize Unlimited | Where-Object {()($_.RecipientTypeDetails -eq "UserMailbox") -and ($_.PrimarySmtpAddress -like "*@panoramicassociates*") -and ($_.PrimarySmtpAddress -notlike "*.onmicrosoft.com")}
+$PanoAssUsers = Get-Mailbox -ResultSize Unlimited | Where-Object {($_.RecipientTypeDetails -eq "UserMailbox") -and ($_.PrimarySmtpAddress -like "*@panoramicassociates*") -and ($_.PrimarySmtpAddress -notlike "*.onmicrosoft.com")}
 foreach ($PanoAssUser in $PanoAssUsers){
     #Set-AzureADUser -ObjectId $PanoAssUser.PrimarySmtpAddress -CompanyName  "Panoramic Associates"
     Get-AzureADUser -ObjectID $PanoAssUser.PrimarySmtpAddress | Select DisplayName,CompanyName

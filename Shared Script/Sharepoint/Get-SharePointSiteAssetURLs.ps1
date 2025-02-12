@@ -9,7 +9,7 @@ $ListName= "Site Assets"
 Connect-PnPOnline -Url $SiteURL -Interactive
  
 #Get All Files from the document library - In batches of 500
-$ListItems = Get-PnPListItem -List $ListName -PageSize 500 | Where {$_.FileSystemObjectType -eq "Folder"}
+$ListItems = Get-PnPListItem -List $ListName -PageSize 500 | Where-Object {$_.FileSystemObjectType -eq "Folder"}
   
 #Loop through all documents
 $DocumentsData=@()
