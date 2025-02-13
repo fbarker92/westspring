@@ -1,18 +1,4 @@
-# Ensure necessary modules are installed
-$modules = @("Microsoft.Graph", "ExchangeOnlineManagement")
-foreach ($module in $modules) {
-    if (-not (Get-Module -ListAvailable -Name $module)) {
-        Install-Module -Name $module -Force -Scope CurrentUser
-    }
-}
-
-# Import the necessary modules
-Import-Module Microsoft.Graph
-Import-Module ExchangeOnlineManagement
-
-# Define the log file path
-$logFile = "C:\path\to\$(Get-date -Format "yyy-MM-dd")logfile.txt"
-
+## Define Functions
 # Function to log messages
 function Write-LogMessage {
     param (
@@ -22,6 +8,24 @@ function Write-LogMessage {
     $logEntry = "$timestamp - $message"
     Add-Content -Path $logFile -Value $logEntry
 }
+
+# Define the log file path
+$logFile = "$env:USER\$(Get-date -Format "yyy-MM-dd")-logfile.txt"
+
+## Module Installation
+# Ensure necessary modules are installed
+$modules = @("Microsoft.Graph", "ExchangeOnlineManagement")
+foreach ($module in $modules) {
+    if (-not (Get-Module -ListAvailable -Name $module)) {
+        Write-LogMessage "$module module not found. Installing..."
+        Install-Module -Name $module -Force -Scope CurrentUser
+    } else {Write-LogMessage "$module module found."}
+}
+
+# Import the necessary modules
+Import-Module Microsoft.Graph
+Import-Module ExchangeOnlineManagement
+
 
 # Get Credentials
 #$cred = Get-Credential
